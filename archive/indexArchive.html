@@ -1,0 +1,86 @@
+<!doctype html>
+<notebook theme="air">
+  <title>Least Squares</title>
+  <script id="1" type="text/markdown">
+    # Least Squares
+
+    The least-squares problem is a fundamental problem in numerical linear algebra and statistics. Given a matrix `A` and a vector `b`, the least-squares problem is to find a vector `x` that minimizes the Euclidean norm of the residual `R = b - A*x`. The solution to this problem can be computed using the `dgels` function, which is part of the LAPACK library.
+
+    The `dgels` function computes the least-squares solution to a linear system of equations. It can handle both overdetermined systems (where there are more equations than unknowns) and underdetermined systems (where there are more unknowns than equations). The function uses QR factorization to compute the solution efficiently.
+
+    In this notebook, we will demonstrate how to use the `dgels` function to solve a least-squares problem in JavaScript. We will simulate some data, fit a linear model to the data using least squares, and visualize the results.
+  </script>
+  <script id="2" type="text/markdown">
+    Let us first simulate some data under a simple linear model:
+  </script>
+  <script id="3" type="module" pinned="">
+    import normal from 'https://cdn.jsdelivr.net/gh/stdlib-js/random-base-normal@esm/index.mjs';
+    import linspace from 'https://cdn.jsdelivr.net/gh/stdlib-js/array-base-linspace@esm/index.mjs';
+    const x = linspace( 0, 4, 20 );
+    const data = x.map( xi => ({
+      x: xi,
+      y: 2*xi + normal( 0, 2 )
+    }));
+    display(data);
+  </script>
+  <script id="4" type="text/markdown">
+    and plot the data:
+  </script>
+  <script id="5" type="module" pinned="">
+    Plot.plot({
+      marks: [
+        Plot.dot(data, { x: "x", y: "y", fill: "steelblue" }),
+        Plot.line([[0, 0], [4, 8]], { stroke: "red" }),
+        Plot.line([[0, 0], [4, 4 * fittedSlope]], { stroke: "blue" })
+      ]
+    })
+  </script>
+  <script id="6" type="module" pinned="">
+    import { dgels } from "./pca_projection.browser.js";
+    const A = new Float64Array( data.length );
+    const b = new Float64Array( data.length );
+    for ( let i = 0; i < data.length; i++ ) {
+      A[ i ] = data[i].x;
+      b[ i ] = data[i].y;
+    }
+    dgels( 'row-major', 'no-transpose', data.length, 1, 1, A, 1, b, 1 );
+    const fittedSlope = b[0];
+    const rss = b.slice(1).reduce( (acc, val) => acc + val*val, 0 );
+  </script>
+  <script id="7" type="text/markdown">
+    The fitted slope is ${fittedSlope}, and the residual sum of squares (RSS) is ${rss}. The standard error of the slope can be computed as ${tex`\sqrt{RSS / (n - 2)}`}, where _n_ is the number of data points. In this case, the standard error is ${Math.sqrt(rss / (data.length - 2))}.
+  </script>
+  <script id="8" type="text/markdown">
+    ## Testing multiple dimensions
+  </script>
+  <script id="9" type="text/x-typescript" pinned="">
+    import uniform from 'https://cdn.jsdelivr.net/gh/stdlib-js/random-base-uniform@esm/index.mjs';
+    const mdata = Array.from({length:20}, () => {
+      const x1 = uniform(0, 10);
+      const x2 = uniform(0, 10);
+      const x3 = uniform(0, 10);
+      const x4 = uniform(0, 10);
+      return {
+        x1, x2, x3, x4,
+        y: 1 * x1 + (-2) * x2 + 3 * x3 + (-4) * x4 + normal(0, 2)
+      }
+    })
+  </script>
+  <script id="10" type="text/x-typescript" pinned="">
+    Inputs.table(mdata)
+  </script>
+  <script id="11" type="text/x-typescript" pinned="">
+    const A = new Float64Array( mdata.length * 4);
+    const b = new Float64Array( mdata.length );
+    for ( let i = 0; i < mdata.length; i++ ) {
+      A[ i * 4 + 0 ] = mdata[i].x1;
+      A[ i * 4 + 1 ] = mdata[i].x2;
+      A[ i * 4 + 2 ] = mdata[i].x3;
+      A[ i * 4 + 3 ] = mdata[i].x4;
+      b[ i ] = mdata[i].y;
+    }
+    dgels( 'row-major', 'no-transpose', mdata.length, 4, 1, A, 4, b, 1 );
+    const fittedCoefficients = b.slice(0, 4);
+    display(fittedCoefficients)
+  </script>
+</notebook>

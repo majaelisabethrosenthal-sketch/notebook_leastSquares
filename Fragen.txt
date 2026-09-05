@@ -1,0 +1,54 @@
+Fragen: 
+- in Zeile 170 wird die Funktion strandAmbiguous aufgerufen. hier geht es scheinbar darum, dass die Basen je nach Methode anders eingelesen werden und es so sein kann, dass der komplementär Strang eingelesen wird (AT und TA...) dann werden aber zwei Allele verglichen, die beide aus der Weights Datei stammen -> hier verstehe ich noch nicht ganz warum
+
+- in Zeile 297 und 298
+so wie ich es verstanden habe, ist also diese .weights Datei unsere Referenz... diese haben wir in reducePcWeights gekürzt auf die Daten bzw. SNPs die es auch so in den Daten der PLINK gibt (hier geht es also wieder um das einlesen der Gendaten und dass es da unterschiede gibt) 
+
+- jetzt zählt aber das PLINK-Programm die Gen-Werte nach seiner eigenen Logik. aber die weights-Datei wurde scheinbar mit SmartPCA erstellt und diese Logik hat für jeden SNP eine feste Definition, welcher Buchstabe das Referenz Allel ist 
+- ich verstehe noch nicht 100%ig warum wir das dann also umdrehen müssen und warum dann vorher auch alles geklappt hat (also der Vergleich der Allele [ab Stelle 170]) 
+
+--> Ideen dazu: in getOverlapMasks an Stelle 170 schauen wir uns die Basen an (sa1, sa2 = Die beiden Allele (Buchstaben) aus der Referenz-Gewichtsdatei und pa1, pa2 = Die beiden Allele (Buchstaben) aus PLINK-Datei) --> hier kann es sein, dass die Buchstaben vertauscht (-> flipMask) sind oder das Komplement dort steht 
+
+
+
+
+dgels: 
+hier geben wir also eine Matrix A rein und einen Vektor b (und noch weitere Infos) und dgels überschreibt unseren Vektor b:
+wir haben die folgenden Eingabeparameter: 
+order: storage layout ('row-major' or 'column-major').
+trans: specifies whether the matrix should be transposed.
+M: number of rows (of the matrix A) 
+N: number of columns (of the matrix A)
+nrhs: number of right-hand sides. (i.e., the number of columns of the matrices B and X. NRHS >=0)
+Erklärung: A * X = B (mit A Matrix, X unbekannt und B Vektor) --> für wie viele verschiedene Ziel-Vektoren soll die Rechnung gleichzeitig in einem Durchlauf gelöst werden? --> 1: berechne für genau eine Person (wir haben genau eine rechte Seite) 
+A: input array A. (on entry: the M-by-N matrix A, On exit, A ist overwritten)
+hier ist wichtig: A wird überschrieben:
+M >= N (mehr Zeilen als Spalten) -> A wird mit Details seiner QR_Zerlegung überschrieben
+M < N -> dafür gäbe es eine andere Methode namens LQ-Zerlegung (DGELQF) --> hier irrelevant
+LDA: leading dimension of A.
+B: input array B. (HIER WIRD ES SPANNEND) (on entry: the matrix B of right hand side vectors, stored columnwise and on exit ...)
+hier wird also auch B überschrieben:
+if INFO = 0 (= 0:  successful exit), B is overwritten by the solution vectors, stored columnwise
+if TRANS = 'N' (wir drehen die Matrix nicht um) and m >= n (mehr Zeilen als Spalten), rows 1 to n of B contain the least squares solution vectors; the residual sum of squares for the solution in each column is given by the sum of squares of elements N+1 to M in that column; 
+if TRANS = 'N' and m < n, .... irrelvant für uns
+--> hier also wichtig für uns: vorher stand in b: [SNP0_abweichung, SNP1_abweichung, ....., SNP(numSNPs-1)_abweichung] und danach: [PC1_koordinate, PC2_koordinate, ..., PC(numPCs)_koordinate, Restfehler_Komponente_N, ..., Restfehler_Komponente_M-1]
+LDB: leading dimension of B.
+
+WICHTIG für mich: git blahpack / lib / lapack / base / dgels / lib / base.js --> Zeile 151 else 
+
+
+Aufgaben:
+- statistische Fehleritervalle berechnen und visualisieren (implementing prediction noise by least-squares projection) --> evtl. auch für Individuen ohne missingness
+    - bezieht sich nicht direkt auf die Fehler der einzelnen SNPs, sondern auf das Endergebnis
+    - wie sicher wissen wir, dass unser Punkt wirklich da ist
+    - wie präszise ist unsere Schätzung
+- residual sum of squares (RSS) -> feststellen, welche Genome überhaupt gut und welche schlecht projiziert werden (Residuals by least-square projection)
+    - aufsummierte quadrierte Restfehler 
+    - prüft, wir gut die Realität des Menschen in das vorgebene Welt-Modell passt
+    - wie stark weicht jedes Gen von der globalen referenz ab
+    - passt der Mensch überhaupt in die Population?
+- evtl. non-negative least-squares Komponenten-Zerlegung -> Methode "Pane" 
+
+
+
+

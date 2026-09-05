@@ -1,0 +1,23 @@
+{
+  "name": "leastsquares",
+  "version": "1.0.0",
+  "description": "A test for least-squares solving with stdlib in Javascript",
+  "license": "MIT",
+  "author": "Stephan Schiffels",
+  "type": "module",
+  "scripts": {
+    "preview": "notebooks preview",
+    "bundle": "esbuild --bundle --format=esm pca_projection.ts > pca_projection.browser.js",
+    "build": "notebooks build index.html pca_projection.html -o docs",
+    "serve": "http-server docs -p 8080 -c-1 --cors"
+  },
+  "dependencies": {
+    "@observablehq/notebook-kit": "^1.8.0",
+    "@rreusser/blapack": "github:stschiff/blahpack#09c542d1e13f16d6c64aa9f1aa32233f43e1fe8e",
+    "@stdlib/stdlib": "^0.3.2",
+    "http-server": "^14.1.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0"
+  }
+}

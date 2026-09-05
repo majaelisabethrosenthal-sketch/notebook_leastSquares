@@ -1,0 +1,50 @@
+<!doctype html>
+<notebook theme="cotton">
+  <title>dgels test</title>
+  <script id="1" type="text/markdown">
+    # Testing the function `dgels`
+  </script>
+  <script id="2" type="text/markdown">
+    First I want to test whether the `dgels` function stores the overwritten Matrix A columnwise or rowwise. 
+  </script>
+  <script id="3" type="module" pinned="">
+    import { dgels, dtrtri, extractMatrix, transposeMatrix, MatrixMultiplication, extractStandardErrors, generateEllipse, computeEllipseValues, generateEllipseAxes} from "./pca_projection.browser.js";
+    const M1 = 3, N1 = 3, NRHS = 1;
+
+    const A_row = new Float64Array([1, 2, 3, 4, 5, 6, 7, 8, 10]);
+    const A_col = new Float64Array([1, 4, 7, 2, 5, 8, 3, 6, 10]);
+
+    const B_row = new Float64Array([6, 15, 25]);
+    const B_col = new Float64Array([6, 15, 25]);
+
+    const A_row_copy = new Float64Array(A_row);
+    const A_col_copy = new Float64Array(A_col);
+
+    dgels('row-major', 'no-transpose', M1, N1, NRHS, A_row_copy, N1, B_row, NRHS);
+
+    dgels('column-major', 'no-transpose', M1, N1, NRHS, A_col_copy, M1, B_col, M1);
+
+    display({A_row_copy, A_col_copy})
+
+  </script>
+  <script id="4" type="text/markdown">
+    We can see that when we write 'column-major' then `dgels` stores the overwritten Matrix A columnwise and when we write 'row-major' then `dgels` stores the overwritten Matrix A rowwise.
+  </script>
+  <script id="5" type="text/markdown">
+    Let us now test whether the QR decomposition went correctly and we can extract the upper triangular Matrix R from the overwritten A.
+    To do this we only have to check whether ${tex`(A^T A)`} is equal to ${tex`(R^T R)`}. 
+  </script>
+  <script id="6" type="module" pinned=""> 
+    const R_matrix = extractMatrix(A_row_copy, 3);
+    display(R_matrix);
+
+    const A_row_T = transposeMatrix(A_row, 3);
+    const AtA = MatrixMultiplication(A_row_T, A_row, 3);
+    display(AtA);
+
+    const R_T = transposeMatrix(R_matrix, 3);
+    const RtR = MatrixMultiplication(R_T, R_matrix, 3);
+    display(RtR);
+  </script> 
+
+</notebook>

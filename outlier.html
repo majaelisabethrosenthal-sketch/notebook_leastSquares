@@ -1,0 +1,77 @@
+<!doctype html>
+<notebook theme="air">
+  <title>Outlier on RSS</title>
+  <script id="1" type="text/markdown">
+    ## Testing the impact of an outlier on the RSS
+  </script>
+  <script id="2" type="text/markdown">
+    Remeber our dataset from index.html:
+  </script>
+  <script id="3" type="module" pinned="">
+    import normal from 'https://cdn.jsdelivr.net/gh/stdlib-js/random-base-normal@esm/index.mjs';
+    import linspace from 'https://cdn.jsdelivr.net/gh/stdlib-js/array-base-linspace@esm/index.mjs';
+    const x = linspace( 0, 4, 20 );
+    const data = x.map( xi => ({
+      x: xi,
+      y: 2*xi + normal( 0, 2 )
+    }));
+    display(data);
+
+    import { dgels , dtrtri, extractMatrix, transposeMatrix, MatrixMultiplication, extractStandardErrors, computeEllipseValues, generateEllipse} from "./pca_projection.browser.js";
+    const A = new Float64Array( data.length );
+    const b = new Float64Array( data.length );
+    for ( let i = 0; i < data.length; i++ ) {
+      A[ i ] = data[i].x;
+      b[ i ] = data[i].y;
+    }
+    dgels( 'row-major', 'no-transpose', data.length, 1, 1, A, 1, b, 1 );
+    const fittedSlope = b[0];
+    const rss = b.slice(1).reduce( (acc, val) => acc + val*val, 0 );
+  </script>
+  <script id="4" type="text/markdown">
+    The fitted slope is ${fittedSlope} and the RSS is ${rss}.
+
+    Let us now manipulate a data point from the given data above that does not follow the linear model.
+  </script>
+  <script id="5" type="module" pinned="">
+    const outlierData = data.map((d, index) => {
+      if (index === 10) {
+        return { x: d.x, y: 20.0, isOutlier: true }; 
+      }
+      return { ...d, isOutlier: false };
+    });
+  </script>
+>
+  <script id="6" type="text/markdown">
+    and plot the manipulated data:
+  </script>
+  <script id="7" type="module" pinned="">
+    Plot.plot({
+      marks: [
+        Plot.dot(outlierData, { 
+          x: "x", 
+          y: "y", 
+          fill: d => d.isOutlier ? "red" : "steelblue",
+          r: d => d.isOutlier * 3 + 3, 
+        }),
+        Plot.line([[0, 0], [4, 8]], { stroke: "red" }),
+        Plot.line([[0, 0], [4, 4 * fittedSlopeOutlier]], { stroke: "blue" })
+      ]
+    })
+  </script>
+  <script id="8" type="module" pinned="">
+    const A_out = new Float64Array( outlierData.length );
+    const b_out = new Float64Array( outlierData.length );
+    for ( let i = 0; i < outlierData.length; i++ ) {
+      A_out[ i ] = outlierData[i].x;
+      b_out[ i ] = outlierData[i].y;
+    }
+    dgels( 'row-major', 'no-transpose', outlierData.length, 1, 1, A_out, 1, b_out, 1 );
+    const fittedSlopeOutlier = b_out[0];
+    const rssOutlier = b_out.slice(1).reduce( (acc, val) => acc + val*val, 0 );
+  </script>
+
+  <script id="9" type="text/markdown">
+    The fitted slope is now **${fittedSlopeOutlier}**, and the new RSS rises up to **${rssOutlier}** (compared to ${rss} originally). 
+  </script>
+</notebook>

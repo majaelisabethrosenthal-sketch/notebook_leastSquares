@@ -1,0 +1,98 @@
+<!doctype html>
+<notebook theme="cotton">
+  <title>Proof of concept PCA projection with simulated data</title>
+  <script id="1" type="text/markdown">
+    # Proof of concept PCA projection with simulated data
+  </script>
+  <script id="2" type="text/x-typescript" pinned="">
+    import { readBimData, readFamData, readBedData, readSnpWeights, getOverlapMasks, reducePcWeights,
+           extractAndTransposeGenotypes, projectSamples, dgels } from './pca_projection.browser.js';
+  </script>
+  <script id="3" type="text/x-typescript" pinned="">
+    const y = 828.667 // externally taken from zztrace output of log file
+    const eigvals = [ 1.464926, 1.399888, 1.321846, 1.304576, 1.275850, 1.205157 ] // taken from the eval file.
+  </script>
+  <script id="5" type="text/x-typescript" pinned="">
+    const bimDat = await FileAttachment("data/sim.bim").text().then(t => readBimData(t));
+    const famDat = await FileAttachment("data/sim.fam").text().then(t => readFamData(t));
+    const nrSnps = bimDat.snpIDs.length;
+    const nrInds = famDat.indNames.length;
+    const bedDat = await FileAttachment("data/sim.bed").arrayBuffer().then(t => readBedData(t, nrSnps, nrInds));
+  </script>
+  <script id="32" type="text/x-typescript" pinned="">
+    bedDat
+  </script>
+  <script id="16" type="text/x-typescript" pinned="">
+    const weightDat = display(await FileAttachment("data/sim_with_freqs.weights").text().then(t => readSnpWeights(t)))
+  </script>
+  <script id="28" type="text/x-typescript" pinned="">
+    const overlap = display(getOverlapMasks(bimDat, bimDat, weightDat))
+  </script>
+  <script id="30" type="text/x-typescript" pinned="">
+    const reducedWeightDat = display(reducePcWeights(weightDat, overlap))
+  </script>
+  <script id="31" type="text/x-typescript" pinned="">
+    const tGenoDat = display(extractAndTransposeGenotypes(bedDat, nrSnps, nrInds, overlap))
+  </script>
+  <script id="20" type="text/x-typescript" pinned="">
+    const projectionResults = projectSamples(tGenoDat, reducedWeightDat.pcWeights, reducedWeightDat.frequencies, nrInds, reducedWeightDat.numPCs, nrSnps, y, eigvals);
+    display(Inputs.table(projectionResults))
+  </script>
+  <script id="27" type="text/x-typescript" pinned="">
+    const evecDat = await FileAttachment("data/sim.evec")
+      .text()
+      .then(t => {
+        const lines = t.trim().split("\n");
+        return lines.slice(1).map(r => {
+          const fields = r.trim().split(/\s+/);
+          return {
+            ind: fields[0],
+            pcCoords: fields.slice(1, 2 + weightDat.numPCs - 1).map(n => parseFloat(n))
+          }
+        })
+      });
+    display(Inputs.table(evecDat))
+  </script>
+  <script id="15" type="text/markdown">
+    ## Adding frequencies to weight file
+  </script>
+  <script id="9" type="text/x-typescript" pinned="">
+    const freqs = Array.from({length: nrSnps}, (_, i) => {
+      let freq = 0;
+      let cnt = 0;
+      for(let j = 0; j < 24; j++) {
+        const g = bedDat[i * nrInds + j];
+        if(g != 3) {
+          freq += g / 2; // Note: This is the alternate allele frequency!
+          cnt++;
+        }
+      }
+      return freq / cnt;
+    })
+  </script>
+  <script id="13" type="text/x-typescript" pinned="">
+    // Replace the last column of each row with the computed freqs
+    const snpWeightsRaw = await FileAttachment("data/sim.weights").text();
+    const newTsvContent = snpWeightsRaw
+      .trim()
+      .split("\n")
+      .map((line, i) => {
+        let cols = line.trim().split(/\s+/);
+        return [...cols.slice(0, 3),
+                String.fromCharCode(bimDat.alleles1[i]),
+                String.fromCharCode(bimDat.alleles2[i]), ...cols.slice(3), freqs[i]].join("\t")
+      })
+      .join("\n");
+
+    // Preview first 3 rows
+    display("Preview (first 3 rows):");
+    display(newTsvContent.split("\n").slice(0, 3).join("\n"));
+  </script>
+  <script id="14" type="text/x-typescript" pinned="">
+    // Create a download button for the new weights file
+    const blob = new Blob([newTsvContent], {type: "text/tab-separated-values"});
+    const url = URL.createObjectURL(blob);
+    const downloadBtn = display(html`<a href=${url} download="sim_with_freqs.weights">
+      ⬇️ Download sim_with_freqs.weights</a>`);
+  </script>
+</notebook>
