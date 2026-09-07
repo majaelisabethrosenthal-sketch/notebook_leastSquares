@@ -1,6 +1,6 @@
 A computational notebook, written with [Observable's "Notebook-Kit"](https://observablehq.com/notebook-kit/kit).
 
-Developed as part of an internship at Max Planck Institute for Evolutionary Anthropology, this project extends and builds upon the foundational codebase originally created by Stephan Schiffels (available at [notebook_leastSquares](https://github.com/stschiff/notebook_leastSquares).
+Developed as part of an internship at Max Planck Institute for Evolutionary Anthropology, this project extends and builds upon the foundational codebase originally created by Stephan Schiffels (available at [notebook_leastSquares](https://github.com/stschiff/notebook_leastSquares)).
 
 At its core, the notebook explores Least-squares fitting, using the function `dgels`, which is not yet implemented in [stdlib's implementation of LAPACK](https://stdlib.io/docs/api/latest/@stdlib/lapack), but available in an experimental package [blapack](https://github.com/rreusser/notes) by Rick Reusser.
 
