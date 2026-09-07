@@ -10,7 +10,7 @@
 
     In this notebook, we will demonstrate how to use the `dgels` function to solve a least-squares problem in JavaScript. We will simulate some data, fit a linear model to the data using least squares, and visualize the results.
 
-    Additionally we will calculate the Residual Sum of Squares (RSS), using the `dgels` function. And with the help of the `dtrtri` function we will calculate the variance covariance matrix to first visualize the standard error bars and then the error ellipse.
+    Additionally we will calculate the Residual Sum of Squares (RSS), using the `dgels` function. And with the help of the `dtrtri` function we will calculate the variance-covariance matrix to first get and visualize the standard error bars and then the error ellipse.
   </script>
   <script id="2" type="text/markdown">
     Let us first simulate some data under a simple linear model:
@@ -57,7 +57,8 @@
     })
   </script>
   <script id="8" type="text/markdown">
-    The fitted slope is ${fittedSlope}, and the residual sum of squares (RSS) is ${rss} (to see the impact of an outlier on the RSS see ...). 
+    The fitted slope is ${fittedSlope}, and the residual sum of squares (RSS) is ${rss}.
+    To see the impact of an outlier on the RSS, click [here](./outlier.html).    
     
     The standard error of the slope can be computed as ${tex`SE(\beta_1) = \sqrt{\frac{\frac{\text{RSS}}{n - 1}}{\sum_{i=1}^{n} (x_i^2)}}`}, where _n_ is the number of data points. In this case, the standard error is ${standardError}.
 
@@ -72,9 +73,9 @@
     &= R^{-1} (R^T)^{-1}
     \end{aligned}`} 
 
-    Thus, we only need the upper triangular matrix ${tex`R`} (proof: see ...), which is stored on and above the diagonal of the array ${tex`A`}. To invert the matrix we use the function `dtrtri`.
+    Thus, we only need the upper triangular matrix ${tex`R`} (proof: click [here](./dgels_test.html)), which is stored on and above the diagonal of the array ${tex`A`}. To invert the matrix we use the function `dtrtri`.
     
-    Note: dgels or more precisely dgeqrf stores the overwritten Matrix A dependending on what you have given for order ('row-major' or 'column-major'). (see dgels_test.html)
+    Note: dgels or more precisely dgeqrf stores the overwritten Matrix A dependending on what you have given for order ('row-major' or 'column-major'). (this is shown [here](./dgels_test.html))
   </script>
   <script id="9" type="module" pinned="">
     const R_matrix = extractMatrix(A, 1);
@@ -209,6 +210,13 @@
             Plot.link(axes, {x1: "x1", y1: "y1", x2: "x2", y2: "y2", stroke: "black", markerEnd: "arrow"})
         ]
     })    
+  </script>
+  <script id="22" type="text/markdown">
+    To see some more ellipse testing, click [here](./ellipse_testing.html). 
+  </script>
+  <script id="23" type="text/markdown">
+    Find an application example on a PCA Projection [here](./pca_projection.html). 
+  </script>
   </script>
 
   

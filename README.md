@@ -6,7 +6,7 @@ At its core, the notebook explores Least-squares fitting, using the function `dg
 
 Building upon this foundation, I incorporated the overall dispersion of the data around the model (error variance $\sigma^2$) as well as the parameter uncertainty quantified by the standard errors of $\beta$, using the function `dtrtri`, which is also available in an experimental package [blapack].
 
-The project is organized into a main notebook for core functionality (/index) and several supplementary notebooks for testing and experimentation (see links in /index). There ist also an application example (/pca_projection).
+The project is organized into a main notebook for core functionality [index.html](./index.html) and several supplementary notebooks for testing and experimentation (see links in [index.html](./index.html)). There is also an application example [pca_projection.html](./pca_projection.html).
 
 To run the notebook locally, install [node](https://nodejs.org/en/download) run `npm install` and `npm run preview`, and open in your browser under the address given on the command line, and extending by the notebook name, e.g. `http://localhost:5174/pca_projection`.
 

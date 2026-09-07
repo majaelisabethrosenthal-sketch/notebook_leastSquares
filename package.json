@@ -8,7 +8,7 @@
   "scripts": {
     "preview": "notebooks preview",
     "bundle": "esbuild --bundle --format=esm pca_projection.ts > pca_projection.browser.js",
-    "build": "notebooks build index.html pca_projection.html -o docs",
+    "build": "notebooks build index.html pca_projection.html ellipse_testing.html outlier.html dgels_test.html -o docs",
     "serve": "http-server docs -p 8080 -c-1 --cors"
   },
   "dependencies": {

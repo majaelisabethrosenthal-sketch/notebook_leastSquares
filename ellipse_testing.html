@@ -1,0 +1,186 @@
+<!doctype html>
+<notebook theme="air">
+  <title>Ellipse Testing</title>
+  <script id="1" type="text/markdown">
+    # Estimating coordinates
+  </script>
+  <script id="2" type="module" pinned="">
+    import { dgels , dtrtri, extractMatrix, transposeMatrix, MatrixMultiplication, extractStandardErrors, computeEllipseValues, generateEllipse, generateEllipseAxes} from "./pca_projection.browser.js";
+    import normal from 'https://cdn.jsdelivr.net/gh/stdlib-js/random-base-normal@esm/index.mjs';
+    import uniform from 'https://cdn.jsdelivr.net/gh/stdlib-js/random-base-uniform@esm/index.mjs';
+    const M = 10;
+    const N = 2; 
+    const A_weights = new Float64Array(M * N); 
+    for (let i = 0; i < M; i++) {
+      A_weights[i * N + 0] = uniform(0,5);
+      A_weights[i * N + 1] = uniform(0,5);
+    }
+
+    const b_measure = new Float64Array(M);
+    for (let i = 0; i < M; i++) {
+        b_measure[i] = A_weights[i * N + 0] * 2 + A_weights[i * N + 1] * 4 + normal(0, 2);
+    }
+
+    dgels( 'row-major', 'no-transpose', M, N, 1, A_weights, N, b_measure, 1 );
+    const coordinates = b_measure.slice(0, N);
+    display(coordinates);
+    const rss_c = b_measure.slice(N).reduce((acc, val) => acc + val*val, 0);
+    display(rss_c); 
+
+    const R = extractMatrix(A_weights, N);
+    const RT = transposeMatrix(R, N);
+
+    dtrtri('row-major', 'upper', 'non-unit', N, R, N);
+    dtrtri('row-major', 'lower', 'non-unit', N, RT, N);
+
+    const RtR_inv = MatrixMultiplication(R, RT, N); 
+    const sigma_2 = rss_c / (M - N);
+    const var_covar_matrix_c = new Float64Array(N * N);
+    for (let i = 0; i < RtR_inv.length; i++) {
+        var_covar_matrix_c[i] = RtR_inv[i] * sigma_2;
+    }
+    display(var_covar_matrix_c);
+    const SE = extractStandardErrors(var_covar_matrix_c, N);
+    display([SE]);
+  </script> 
+  <script id="3" type="text/markdown">
+    Let us now plot this. Green is the true point and red is the estimated point.
+  </script>
+  <script id="4" type="module" pinned="">
+    Plot.plot({
+        x: { domain: [0, 6] },
+        y: { domain: [0, 6] },
+        marks: [
+            Plot.dot([{x: 2, y: 4}], {x: "x", y: "y", fill: "green"}),
+            Plot.dot([{x: coordinates[0], y: coordinates[1]}], {x: "x", y: "y", fill: "red"}),
+            Plot.ruleY([{x1: coordinates[0] - SE[0], x2: coordinates[0] + SE[0], y: coordinates[1]}], {x1:"x1", x2: "x2", y: "y", stroke: "black", strokeOpacity: 0.5}),
+            Plot.ruleX([{x: coordinates[0], y1: coordinates[1] - SE[1], y2: coordinates[1] + SE[1]}], {y1:"y1", y2: "y2", x: "x",stroke: "black", strokeOpacity: 0.5})
+        ]
+    })    
+  </script>
+  <script id="5" type="text/markdown">
+    Up to this point, we have only looked at the diagonal elements of our variance-covariance matrix, effectively treating our coordinates as independent variables. However, the off-diagonal elements store non-zero covariances that capture how the principal components relate to one another.
+    To account for this correlation and accurately visualize our uncertainty, we now want to plot a covariance error ellipse. To do this, we first have to compute the eigenvalues and the rotation angle of the covariance matrix to properly align the ellipse with our data orientation.
+    Then we scale the resulting semi-axes using a Chi-squared threshold corresponding to our desired confidence level (e.g., 95%). Finally we transform these mathematical parameters into screen coordinates.
+  </script>
+  <script id="6" type="module" pinned="">
+    const a = var_covar_matrix_c[0];
+    const b = var_covar_matrix_c[1];
+    const c = var_covar_matrix_c[2];
+    const d = var_covar_matrix_c[3];
+
+    const s_95 = -2 * Math.log(1-0.95);
+    display(s_95);
+    const s_90 = -2 * Math.log(1-0.9);
+    display(s_90);
+    const s_99 = -2 * Math.log(1-0.99);
+    display(s_99);
+
+    const nPoints = 100;
+
+
+    // 1
+    const diff = a - d;
+    const tmp = Math.sqrt(diff * diff + 4 * b * b);
+    const lambda1 = (a + d + tmp) / 2;
+    const lambda2 = (a + d - tmp) / 2;
+
+    const theta = 0.5 * Math.atan2(2 * b, diff);
+    const semiMajor = Math.sqrt(lambda1);
+    const semiMinor = Math.sqrt(lambda2);
+
+    const semiMajor95 = Math.sqrt(lambda1 * s_95);
+    const semiMinor95 = Math.sqrt(lambda2 * s_95);
+
+    const semiMajor90 = Math.sqrt(lambda1 * s_90);
+    const semiMinor90 = Math.sqrt(lambda2 * s_90);
+    
+    const semiMajor99 = Math.sqrt(lambda1 * s_99);
+    const semiMinor99 = Math.sqrt(lambda2 * s_99);
+
+    // 2
+    const trace = a + d;
+    const det = a*d - b*c;
+    const term = Math.sqrt((trace*trace)/4 - det);
+    const eigen1 = trace/2 + term; // größerer Eigenwert
+    const eigen2 = trace/2 - term; // kleinerer Eigenwert
+
+    const angle = Math.atan2(eigen1 - a, b); // Richtung des ersten Eigenvektors
+    const SemiMajor = Math.sqrt(eigen1);
+    const SemiMinor = Math.sqrt(eigen2);
+
+    // 1
+    const points = [];
+    for (let i = 0; i <= nPoints; i++) {
+        const t = (i / nPoints) * 2 * Math.PI;
+        const ex = semiMajor * Math.cos(t);
+        const ey = semiMinor * Math.sin(t);
+        const x = coordinates[0] + ex * Math.cos(theta) - ey * Math.sin(theta);
+        const y = coordinates[1] + ex * Math.sin(theta) + ey * Math.cos(theta);
+        points.push({ x, y });
+    }
+
+    const points95 = [];
+    for (let i = 0; i <= nPoints; i++) {
+        const t = (i / nPoints) * 2 * Math.PI;
+        const ex = semiMajor95 * Math.cos(t);
+        const ey = semiMinor95 * Math.sin(t);
+        const x = coordinates[0] + ex * Math.cos(theta) - ey * Math.sin(theta);
+        const y = coordinates[1] + ex * Math.sin(theta) + ey * Math.cos(theta);
+        points95.push({ x, y });
+    }
+
+    const points90 = [];
+    for (let i = 0; i <= nPoints; i++) {
+        const t = (i / nPoints) * 2 * Math.PI;
+        const ex = semiMajor90 * Math.cos(t);
+        const ey = semiMinor90 * Math.sin(t);
+        const x = coordinates[0] + ex * Math.cos(theta) - ey * Math.sin(theta);
+        const y = coordinates[1] + ex * Math.sin(theta) + ey * Math.cos(theta);
+        points90.push({ x, y });
+    }
+
+    const points99 = [];
+    for (let i = 0; i <= nPoints; i++) {
+        const t = (i / nPoints) * 2 * Math.PI;
+        const ex = semiMajor99 * Math.cos(t);
+        const ey = semiMinor99 * Math.sin(t);
+        const x = coordinates[0] + ex * Math.cos(theta) - ey * Math.sin(theta);
+        const y = coordinates[1] + ex * Math.sin(theta) + ey * Math.cos(theta);
+        points99.push({ x, y });
+    }
+
+    // 2
+    const ellipsePoints = [];
+    for (let j = 0; j <= nPoints; j++) {
+        const t2 = (j / nPoints) * 2 * Math.PI;
+        const ex2 = SemiMajor * Math.cos(t2);
+        const ey2 = SemiMinor * Math.sin(t2);
+        const x2 = coordinates[0] + ex2 * Math.cos(angle) - ey2 * Math.sin(angle);
+        const y2 = coordinates[1] + ex2 * Math.sin(angle) + ey2 * Math.cos(angle);
+        ellipsePoints.push({ x2, y2 });
+    }
+
+    const ellipseValues = computeEllipseValues(a, b, d, { confidence: 0.99});
+    const EllipsePoints_s = generateEllipse(coordinates[0], coordinates[1], ellipseValues.semiMajor, ellipseValues.semiMinor, ellipseValues.angle, 100);
+  </script>
+  <script id = "7" type= "module" pinned="">
+    Plot.plot({
+        x: { domain: [0, 6] },
+        y: { domain: [0, 6] },
+        marks: [
+            Plot.dot([{x: 2, y: 4}], {x: "x", y: "y", fill: "green"}),
+            Plot.dot([{x: coordinates[0], y: coordinates[1]}], {x: "x", y: "y", fill: "red"}),
+            Plot.line(points, {x: "x", y: "y", stroke: "black", strokeOpacity: 0.5}),
+            Plot.line(points95, {x: "x", y: "y", stroke: "black", strokeOpacity: 0.5}),
+            Plot.line(points90, {x: "x", y: "y", stroke: "black", strokeOpacity: 0.5}),
+            Plot.line(points99, {x: "x", y: "y", stroke: "black", strokeOpacity: 0.5}),
+            Plot.line(ellipsePoints, {x: "x2", y: "y2", stroke: "blue", strokeOpacity: 0.5}),
+            Plot.line(EllipsePoints_s, {x: "x", y: "y", stroke: "green", strokeOpacity: 0.5}),
+            
+
+        ]
+    })
+  </script>
+
+</notebook>
