@@ -35,32 +35,8 @@
       return { bimDat, famDat, bedDat, numSnps: bimDat.snpIDs.length, numInds: famDat.indNames.length };
     })()
   </script>
-  <script id="101" type="text/x-typescript" pinned="">
-    const corsicaPlinkData = await (async () => {
-      const bimDat = await FileAttachment("data/Joscha_HiRes_WestEurasia_extract.bim")
-        .text().then(t => readBimData(t));
-      const famDat = await FileAttachment("data/Joscha_HiRes_WestEurasia_extract.fam")
-        .text().then(t => readFamData(t));
-      const bedDat = await FileAttachment("data/Joscha_HiRes_WestEurasia_extract.bed")
-        .arrayBuffer()
-        .then(a => readBedData(a, bimDat.snpIDs.length, famDat.indNames.length));
-      return { bimDat, famDat, bedDat, numSnps: bimDat.snpIDs.length, numInds: famDat.indNames.length };
-    })()
-  </script>
-  <script id="103" type="text/x-typescript" pinned="">
-    const finlandPlinkData = await (async () => {
-      const bimDat = await FileAttachment("data/Joscha_HiRes_WestEurasia_extract_Finland.bim")
-        .text().then(t => readBimData(t));
-      const famDat = await FileAttachment("data/Joscha_HiRes_WestEurasia_extract_Finland.fam")
-        .text().then(t => readFamData(t));
-      const bedDat = await FileAttachment("data/Joscha_HiRes_WestEurasia_extract_Finland.bed")
-        .arrayBuffer()
-        .then(a => readBedData(a, bimDat.snpIDs.length, famDat.indNames.length));
-      return { bimDat, famDat, bedDat, numSnps: bimDat.snpIDs.length, numInds: famDat.indNames.length };
-    })()
-  </script>
   <script id="102" type="text/x-typescript" pinned="">
-    const plinkDat = gretzingerPlinkData;//corsicaPlinkData;//finlandPlinkData;// Hier kann ich mir den zu analysierenden Datensatz auswählen 
+    const plinkDat = gretzingerPlinkData;
   </script>
   <script id="18" type="text/x-typescript" pinned="">
     plinkDat.bimDat
@@ -164,7 +140,7 @@
     })
 
   </script>
-  
+
   <script id="56" type="module" pinned="">
       const allEllipsePoints = projectionResults
         .filter(o => o.nonMissingCount > 20000)
