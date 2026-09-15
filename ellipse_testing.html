@@ -163,6 +163,9 @@
 
     const ellipseValues = computeEllipseValues(a, b, d, { confidence: 0.99});
     const EllipsePoints_s = generateEllipse(coordinates[0], coordinates[1], ellipseValues.semiMajor, ellipseValues.semiMinor, ellipseValues.angle, 100);
+    const axes = generateEllipseAxes(coordinates[0], coordinates[1], ellipseValues.semiMajor, ellipseValues.semiMinor, ellipseValues.angle);
+
+
   </script>
   <script id = "7" type= "module" pinned="">
     Plot.plot({
@@ -177,8 +180,7 @@
             Plot.line(points99, {x: "x", y: "y", stroke: "black", strokeOpacity: 0.5}),
             Plot.line(ellipsePoints, {x: "x2", y: "y2", stroke: "blue", strokeOpacity: 0.5}),
             Plot.line(EllipsePoints_s, {x: "x", y: "y", stroke: "green", strokeOpacity: 0.5}),
-            
-
+            Plot.link(axes, {x1: "x1", y1: "y1", x2: "x2", y2: "y2", stroke: "black", markerEnd: "arrow"})
         ]
     })
   </script>
