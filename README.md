@@ -9,17 +9,26 @@ Building upon this foundation, I incorporated the overall dispersion of the data
 The project is organized into a main notebook for core functionality [index.html](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/index.html) and several supplementary notebooks for testing and experimentation. There is also an application example [pca_projection.html](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/pca_projection.html).
 
 Additional notebooks:
+
 [Testing impact of outlier on RSS](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/outlier.html)
+
 [Testing the dgels function](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/dgels_test.html)
+
 [Testing confidence ellipse](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/ellipse_testing.html)
+
 [Testing impact of missingness on ellipses](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/missingness.html)
+
 [Testing non-vanishing covariance](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/nonVanishingCovariance.html)
+
 Regarding NNLS:
+
 [Fraction of variance per PC explained](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/pcCombinations.html)
+
 [IndexNNLS](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/indexNNLS.html)
+
 [Application example for NNLS](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/pca_projectionNNLS.html)
 
-You can view the live notebooks [here](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/)
+You can view the live notebooks [here](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/) and [here](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/indexNNLS.html)
 
 To run the notebook locally, install [node](https://nodejs.org/en/download) run `npm install` and `npm run preview`, and open in your browser under the address given on the command line, and extending by the notebook name, e.g. `http://localhost:5174/pca_projection`.
 
