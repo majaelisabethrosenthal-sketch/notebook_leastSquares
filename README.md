@@ -6,7 +6,18 @@ At its core, the notebook explores Least-squares fitting, using the function `dg
 
 Building upon this foundation, I incorporated the overall dispersion of the data around the model (error variance $\sigma^2$) as well as the parameter uncertainty quantified by the standard errors of $\beta$, using the function `dtrtri`, which is also available in an experimental package [blapack](https://github.com/rreusser/notes).
 
-The project is organized into a main notebook for core functionality [index.html](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/index.html) and several supplementary notebooks for testing and experimentation (see links in [index.html](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/index.html)). There is also an application example [pca_projection.html](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/pca_projection.html).
+The project is organized into a main notebook for core functionality [index.html](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/index.html) and several supplementary notebooks for testing and experimentation. There is also an application example [pca_projection.html](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/pca_projection.html).
+
+Additional notebooks:
+[Testing impact of outlier on RSS](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/outlier.html)
+[Testing the dgels function](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/dgels_test.html)
+[Testing confidence ellipse](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/ellipse_testing.html)
+[Testing impact of missingness on ellipses](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/missingness.html)
+[Testing non-vanishing covariance](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/nonVanishingCovariance.html)
+Regarding NNLS:
+[Fraction of variance per PC explained](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/pcCombinations.html)
+[IndexNNLS](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/indexNNLS.html)
+[Application example for NNLS](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/pca_projectionNNLS.html)
 
 You can view the live notebooks [here](https://majaelisabethrosenthal-sketch.github.io/notebook_leastSquares/)
 
