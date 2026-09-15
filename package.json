@@ -15,7 +15,8 @@
     "@observablehq/notebook-kit": "^1.8.0",
     "@rreusser/blapack": "github:stschiff/blahpack#09c542d1e13f16d6c64aa9f1aa32233f43e1fe8e",
     "@stdlib/stdlib": "^0.3.2",
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "quadprog": "^2.0.0"
   },
   "devDependencies": {
     "esbuild": "^0.28.0"

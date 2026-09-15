@@ -2,6 +2,8 @@ import dgels from '@rreusser/blapack/lapack/base/dgels';
 
 import dtrtri from '@rreusser/blapack/lapack/base/dtrtri';
 
+import { solveQP } from "quadprog";
+
 interface BimData {
     snpIDs: string[];
     chromosomes: Uint8Array;
@@ -64,6 +66,16 @@ interface AxisLine {
     y2: number;
 }
 
+interface refDatInput {
+    pop: string;
+    [key: string]: any;  
+}
+
+interface Constraints {
+    Amat: number[][];
+    bvec: number[];
+    meq: number;
+}
 
 function readBimData(bimText: string): BimData {
     const lines = bimText.trim().split('\n');
@@ -481,6 +493,77 @@ function generateEllipseAxes(cx: number, cy: number, semiMajor: number, semiMino
     }
   ];
 }
+
+const pcNames = ["pc1","pc2","pc3","pc4","pc5","pc6","pc7","pc8","pc9","pc10"];
+
+function getPopulationMean(refDat: refDatInput[], popName: string, numPCs: number): number[] {
+    const members = refDat.filter(d => d.pop === popName);
+    const sums = new Array(numPCs).fill(0);
+    for (const member of members) {
+        for (let k = 0; k < numPCs; k++) {
+            sums[k] += member[pcNames[k]];
+        }
+    }
+    const mean = sums.map(s => s / members.length);
+    return mean;
+}
+
+function computeAtA(centroids: number[][], numPCs: number): number[][] {
+  const N = centroids.length;
+  const AtA: number[][] = []; 
+  for (let i = 1; i <= N; i++) { // Note: we start at 1 for column and row so that index 0 will always be empty (quadprog reqires it!)
+    AtA[i] = []; 
+    for (let j = 1; j <= N; j++) { // also starting at 1
+      let sum = 0;
+      for (let k = 0; k < numPCs; k++) sum += centroids[i-1][k] * centroids[j-1][k];
+      AtA[i][j] = sum;
+    }
+  }
+  return AtA;
+}
+
+function computeAtb(centroids: number[][], targetPcCoords: number[], numPCs: number): number[] {
+  const N = centroids.length;
+  const Atb: number[] = [];
+  for (let i = 1; i <= N; i++) {
+    let sum = 0;
+    for (let k = 0; k < numPCs; k++) sum += centroids[i-1][k] * targetPcCoords[k];
+    Atb[i] = sum;
+  }
+  return Atb;
+}
+
+function buildConstraints(N: number): Constraints {
+  const Amat: number[][] = [];
+  for (let i = 1; i <= N; i++) {
+    const row: number[] = [];
+    row[1] = 1;
+    for (let j = 1; j <= N; j++) row[j+1] = (i === j ? 1 : 0); 
+    Amat[i] = row;
+  }
+  const bvec: number[] = [];
+  bvec[1] = 1;
+  for (let i = 0; i < N; i++) bvec[i+2] = 0;
+  return { Amat, bvec, meq: 1 };
+}
+
+function copyMat(mat: number[][]): number[][] {
+  const copy: number[][] = [];
+  for (let i = 1; i < mat.length; i++) copy[i] = [...mat[i]]; 
+  return copy;
+}
+
+function computeNNLS(
+  centroids: number[][],
+  targetPcCoords: number[],
+  numPCs: number,
+  constraints: Constraints,
+  AtA: number[][]
+): number[] {
+  const Atb = computeAtb(centroids, targetPcCoords, numPCs);
+  const result = solveQP(copyMat(AtA), Atb, copyMat(constraints.Amat), [...constraints.bvec], constraints.meq); 
+  return result.solution.slice(1);
+}
         
 export { readBimData, readFamData, readBedData, readSnpWeights, getOverlapMasks, reducePcWeights,
-       extractAndTransposeGenotypes, projectSamples, dgels, dtrtri, extractMatrix, transposeMatrix, MatrixMultiplication, extractStandardErrors, generateEllipse, computeEllipseValues, generateEllipseAxes};
+       extractAndTransposeGenotypes, projectSamples, dgels, dtrtri, extractMatrix, transposeMatrix, MatrixMultiplication, extractStandardErrors, generateEllipse, computeEllipseValues, generateEllipseAxes, getPopulationMean, computeAtA, computeAtb, buildConstraints, copyMat, computeNNLS};

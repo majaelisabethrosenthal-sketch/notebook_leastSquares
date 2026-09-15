@@ -36,32 +36,8 @@
       return { bimDat, famDat, bedDat, numSnps: bimDat.snpIDs.length, numInds: famDat.indNames.length };
     })()
   </script>
-  <script id="8" type="text/x-typescript" pinned="">
-    const corsicaPlinkData = await (async () => {
-      const bimDat = await FileAttachment("data/Joscha_HiRes_WestEurasia_extract.bim")
-        .text().then(t => readBimData(t));
-      const famDat = await FileAttachment("data/Joscha_HiRes_WestEurasia_extract.fam")
-        .text().then(t => readFamData(t));
-      const bedDat = await FileAttachment("data/Joscha_HiRes_WestEurasia_extract.bed")
-        .arrayBuffer()
-        .then(a => readBedData(a, bimDat.snpIDs.length, famDat.indNames.length));
-      return { bimDat, famDat, bedDat, numSnps: bimDat.snpIDs.length, numInds: famDat.indNames.length };
-    })()
-  </script>
-  <script id="9" type="text/x-typescript" pinned="">
-    const finlandPlinkData = await (async () => {
-      const bimDat = await FileAttachment("data/Joscha_HiRes_WestEurasia_extract_Finland.bim")
-        .text().then(t => readBimData(t));
-      const famDat = await FileAttachment("data/Joscha_HiRes_WestEurasia_extract_Finland.fam")
-        .text().then(t => readFamData(t));
-      const bedDat = await FileAttachment("data/Joscha_HiRes_WestEurasia_extract_Finland.bed")
-        .arrayBuffer()
-        .then(a => readBedData(a, bimDat.snpIDs.length, famDat.indNames.length));
-      return { bimDat, famDat, bedDat, numSnps: bimDat.snpIDs.length, numInds: famDat.indNames.length };
-    })()
-  </script>
   <script id="10" type="text/x-typescript" pinned="">
-    const plinkDat = gretzingerPlinkData;//corsicaPlinkData;//finlandPlinkData;// Hier kann ich mir den zu analysierenden Datensatz auswählen 
+    const plinkDat = gretzingerPlinkData;
   </script>
   <script id="11" type="text/x-typescript" pinned="">
     plinkDat.bimDat
@@ -162,19 +138,24 @@
   <script id="73" type="text/x-typescript" pinned="">
     const sumEigenvalues = eigenvalues.reduce((sum, val) => sum + val, 0);
     const fractionOfVarianceExplained = eigenvalues.map(val => val / sumEigenvalues);
+
+    const foVe_pc1 = fractionOfVarianceExplained[0];
+    const pc1_percent = (foVe_pc1 * 100).toFixed(2) + "%";
+    const foVe_pc2 = fractionOfVarianceExplained[1];
+    const pc2_percent = (foVe_pc2 * 100).toFixed(2) + "%"; 
+    const foVe_pc3 = fractionOfVarianceExplained[2];
+    const pc3_percent = (foVe_pc3 * 100).toFixed(2) + "%"; 
+    const foVe_pc4 = fractionOfVarianceExplained[3];
+    const pc4_percent = (foVe_pc4 * 100).toFixed(2) + "%"; 
+    const foVe_pc9 = fractionOfVarianceExplained[8];
+    const pc9_percent = (foVe_pc9 * 100).toFixed(2) + "%"; 
+    const foVe_pc10 = fractionOfVarianceExplained[9];
+    const pc10_percent = (foVe_pc10 * 100).toFixed(2) + "%"; 
   </script>
 
   <script id="61" type="text/markdown">
     ### PC1 vs. PC2
-    with fraction of variance explained in %
-  </script>
-  <script id="74" type="text/x-typescript" pinned="">
-    const foVe_pc1 = fractionOfVarianceExplained[0];
-    const pc1_percent = (foVe_pc1 * 100); 
-    display(pc1_percent);
-    const foVe_pc2 = fractionOfVarianceExplained[1];
-    const pc2_percent = (foVe_pc2 * 100); 
-    display(pc2_percent);
+    The fraction of variance explained of PC1 is ${foVe_pc1} (around (${pc1_percent})) and for PC2 it is ${foVe_pc2} (around (${pc2_percent})).
   </script>
 
   <script id="29" type="text/x-typescript" pinned="">
@@ -188,16 +169,9 @@
   </script>
   <script id="62" type="text/markdown">
     ### PC1 vs. PC3
-    with fraction of variance explained in %
+    The fraction of variance explained of PC1 is ${foVe_pc1} (around (${pc1_percent})) and for PC3 it is ${foVe_pc3} (around (${pc3_percent})).
   </script>
-  <script id="75" type="text/x-typescript" pinned="">
-    const foVe_pc1 = fractionOfVarianceExplained[0];
-    const pc1_percent = (foVe_pc1 * 100); 
-    display(pc1_percent);
-    const foVe_pc3 = fractionOfVarianceExplained[2];
-    const pc3_percent = (foVe_pc3 * 100); 
-    display(pc3_percent);
-  </script>
+
   <script id="30" type="text/x-typescript" pinned="">
     Plot.plot({
       color: {legend: true},
@@ -209,15 +183,7 @@
   </script>
   <script id="63" type="text/markdown">
     ### PC1 vs. PC4
-    with fraction of variance explained in %
-  </script>
-  <script id="76" type="text/x-typescript" pinned="">
-    const foVe_pc1 = fractionOfVarianceExplained[0];
-    const pc1_percent = (foVe_pc1 * 100); 
-    display(pc1_percent);
-    const foVe_pc4 = fractionOfVarianceExplained[3];
-    const pc4_percent = (foVe_pc4 * 100); 
-    display(pc4_percent);
+    The fraction of variance explained of PC1 is ${foVe_pc1} (around (${pc1_percent})) and for PC4 it is ${foVe_pc4} (around (${pc4_percent})).
   </script>
 
   <script id="31" type="text/x-typescript" pinned="">
@@ -232,15 +198,7 @@
 
   <script id="64" type="text/markdown">
     ### PC2 vs. PC3
-    with fraction of variance explained in %
-  </script>
-  <script id="77" type="text/x-typescript" pinned="">
-    const foVe_pc2 = fractionOfVarianceExplained[1];
-    const pc2_percent = (foVe_pc2 * 100); 
-    display(pc2_percent);
-    const foVe_pc3 = fractionOfVarianceExplained[2];
-    const pc3_percent = (foVe_pc3 * 100); 
-    display(pc3_percent);
+    The fraction of variance explained of PC2 is ${foVe_pc2} (around (${pc2_percent})) and for PC3 it is ${foVe_pc3} (around (${pc3_percent})).
   </script>
 
   <script id="32" type="text/x-typescript" pinned="">
@@ -254,16 +212,9 @@
   </script>
   <script id="65" type="text/markdown">
     ### PC9 vs. PC10
-    with fraction of variance explained in %
+    The fraction of variance explained of PC9 is ${foVe_pc9} (around (${pc9_percent})) and for PC10 it is ${foVe_pc10} (around (${pc10_percent})).
   </script>
-  <script id="78" type="text/x-typescript" pinned="">
-    const foVe_pc9 = fractionOfVarianceExplained[8];
-    const pc9_percent = (foVe_pc9 * 100); 
-    display(pc9_percent);
-    const foVe_pc10 = fractionOfVarianceExplained[9];
-    const pc10_percent = (foVe_pc10 * 100); 
-    display(pc10_percent);
-  </script>
+
   <script id="33" type="text/x-typescript" pinned="">
     Plot.plot({
       color: {legend: true},

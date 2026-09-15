@@ -1,0 +1,246 @@
+<!doctype html>
+<notebook theme="cotton">
+  <title>PCA Projection NNLS</title>
+  <script id="1" type="text/markdown">
+    # Non-negative least-squares with sum-to-one constraint applied to PCA projection
+  </script>
+  <script id="2" type="text/markdown">
+    We here test out non-negative least-squares, applied to the individuals we projected onto the PCA space, to see a target individual's PC coordinates to be expressed as a non-negative, sum-to-one mixture of reference populations.
+    For example "70% Spain + 30% Germany", or "50% Italy + 30% Germany + 20% England". 
+    
+    This mirrors an admixture-style decomposition: we look for proportions ${tex`\alpha, \beta, (\gamma) \ge 0`} with ${tex`\alpha + \beta (+ \gamma) = 1`} such that
+    
+    ${tex`\alpha \cdot \vec{\mu}_{\text{pop1}} + \beta \cdot \vec{\mu}_{\text{pop2}} (+ \gamma \cdot \vec{\mu}_{\text{pop3}}) \approx \vec{x}_{\text{target}}`}
+    
+    ## Preparing PCA projection
+    To see how this is done, click [here](./pca_projection.html)
+  </script>
+  <script id="3" type="module">
+    const weightDat = FileAttachment("data/Joscha_HiRes_WestEurasia_weights_with_freqs.txt")
+      .text().then(t => readSnpWeights(t));
+  </script>
+  <script id="8" type="text/x-typescript">
+    const gretzingerPlinkData = await (async () => {
+      const bimDat = await FileAttachment("data/2024_Gretzinger_EarlyCelts.bim").text().then(t => readBimData(t));
+      const famDat = await FileAttachment("data/2024_Gretzinger_EarlyCelts.fam").text().then(t => readFamData(t));
+      const bedDat = await FileAttachment("data/2024_Gretzinger_EarlyCelts.bed")
+        .arrayBuffer()
+        .then(a => readBedData(a, bimDat.snpIDs.length, famDat.indNames.length));
+      return { bimDat, famDat, bedDat, numSnps: bimDat.snpIDs.length, numInds: famDat.indNames.length };
+    })()
+
+    const plinkDat = gretzingerPlinkData;
+  </script>
+  <script id="26" type="text/x-typescript">
+    const overlap = getOverlapMasks(plinkDat.bimDat, weightDat);
+  </script>
+  <script id="37" type="text/x-typescript">
+    const {pcWeights : reducedPcWeights, frequencies : reducedFrequencies} = reducePcWeights(weightDat, overlap)
+  </script>
+  <script id="48" type="text/x-typescript">
+    const genoMatrix = extractAndTransposeGenotypes(plinkDat.bedDat, plinkDat.numSnps, plinkDat.numInds, overlap)
+  </script>
+  <script id="54" type="text/markdown">
+    ## Testing the PCA projection
+  </script>
+  <script id="99" type="text/x-typescript">
+    const params = await FileAttachment("data/Joscha_HiRes_WestEurasia_parameters.json").json()
+  </script>
+  <script id="72" type="text/x-typescript">
+    const projectionResults = projectSamples(genoMatrix, reducedPcWeights, reducedFrequencies, plinkDat.numInds, weightDat.numPCs, params.nSNPs, params.yScale, params.eigenValues)
+    display(projectionResults[0].pcCoordinates.slice(0,2))
+  </script>
+  <script id="54" type="text/markdown">
+    ### Projected data coordinates
+  </script>
+  <script id="55" type="text/x-typescript">
+    const projResultTable = projectionResults.map(o => ({
+      nonMissing: o.nonMissingCount, 
+      pc1: o.pcCoordinates[0], 
+      pc2: o.pcCoordinates[1],
+      pc3: o.pcCoordinates[2],
+      pc4: o.pcCoordinates[3], 
+      pc5: o.pcCoordinates[4],
+      pc6: o.pcCoordinates[5],
+      pc7: o.pcCoordinates[6], 
+      pc8: o.pcCoordinates[7],
+      pc9: o.pcCoordinates[8],
+      pc10: o.pcCoordinates[9],
+    }))
+    display(projResultTable.map(d => d.pc1)); 
+  </script>
+  <script id="73" type="text/x-typescript" pinned="">
+    display(Inputs.table(projResultTable));
+  </script>
+  <script id="56" type="text/markdown">
+    ### Reference data
+  </script>
+  <script id="57" type="text/x-typescript">
+    const refDat = await FileAttachment("data/Joscha_HiRes_WestEurasia_evec_with_groups.tsv")
+      .tsv({array: false, typed: true})
+      .then(d => d.map(r => {
+        return {
+          id: r.id,
+          pc1: r.pc1,
+          pc2: r.pc2,
+          pc3: r.pc3,
+          pc4: r.pc4,
+          pc5: r.pc5,
+          pc6: r.pc6,
+          pc7: r.pc7,
+          pc8: r.pc8,
+          pc9: r.pc9,
+          pc10: r.pc10,
+          group: r.group,
+          pop: r.pop
+        }
+      }))
+    display(refDat);
+  </script>
+  <script id="58" type="text/x-typescript" pinned="">
+    Inputs.table(refDat)
+  </script>
+  <script id="59" type="text/x-typescript" pinned="">
+    Plot.plot({
+      color: {legend: true},
+      marks: [
+        Plot.dot(refDat, {x: d => -d.pc2, y: "pc1", fill: "group", opacity: 0.3, tip: true, title: d => d.pop}),
+        //Plot.dot(refDat, {x: d => -d.pc2, y: "pc1", fill: "black", filter: d=>d.pop == "Finland_Subset", tip: true, title: d => d.pop}),
+        Plot.dot(projResultTable, {x: d => -d.pc2, y: "pc1", filter: d => d.nonMissing > 20000}),
+      ]
+    })
+  </script>
+  <script id="60" type="text/markdown">
+    ## Testing NNLS
+
+    Now we calculate and visualize the non-negative, sum-to-one mixture of reference populations by first computing the mean for the current reference population.
+  </script>
+  <script id="61" type="text/x-typescript" pinned="">
+    const members = refDat.filter(d => d.pop === "Germany");
+    display(Inputs.table(members));
+
+    const pc1Array = members.map(d => d.pc1); 
+    display(pc1Array);
+    display(pc1Array.length)
+
+    const sum1 = pc1Array.reduce( (acc, val) => acc + val, 0 );
+    display(sum1);
+    const mean1 = sum1/(pc1Array.length);
+    display(mean1);
+
+    const pc2Array = members.map(d => d.pc2); 
+    display(pc2Array);
+    display(pc2Array.length)
+
+    const sum2 = pc2Array.reduce( (acc, val) => acc + val, 0 );
+    display(sum2);
+    const mean2 = sum2/(pc2Array.length);
+    display(mean2);
+
+  </script>
+
+  <script id="63" type="text/x-typescript" pinned="">
+    const membersSpain = refDat.filter(d => d.pop === "Spain");
+    display(Inputs.table(membersSpain));
+
+    const pc1ArraySpain = membersSpain.map(d => d.pc1); 
+    display(pc1ArraySpain);
+    display(pc1ArraySpain.length)
+
+    const sum1Spain = pc1ArraySpain.reduce( (acc, val) => acc + val, 0 );
+    display(sum1Spain);
+    const mean1Spain = sum1Spain/(pc1ArraySpain.length);
+    display(mean1Spain);
+
+    const pc2ArraySpain = membersSpain.map(d => d.pc2); 
+    display(pc2ArraySpain);
+    display(pc2ArraySpain.length)
+
+    const sum2Spain = pc2ArraySpain.reduce( (acc, val) => acc + val, 0 );
+    display(sum2Spain);
+    const mean2Spain = sum2Spain/(pc2ArraySpain.length);
+    display(mean2Spain);
+
+  </script>
+  <script id="64" type="text/x-typescript" pinned="">
+    Plot.plot({
+      color: {legend: true},
+      marks: [
+        Plot.dot(refDat, {x: d => -d.pc2, y: "pc1", filter: d => d.pop === "Spain",  fill: "group", opacity: 0.3, tip: true, title: d => d.pop}),
+        Plot.dot([{x: -mean2Spain, y: mean1Spain}], {x: "x", y: "y", fill: "red"}),
+        Plot.dot(refDat, {x: d => -d.pc2, y: "pc1", filter: d => d.pop === "Germany",  fill: "group", opacity: 0.3, tip: true, title: d => d.pop}),
+        Plot.dot([{x: -mean2, y: mean1}], {x: "x", y: "y", fill: "red"}),
+        Plot.dot(projResultTable, {x: d => -d.pc2, y: "pc1", filter: d => d.nonMissing > 20000}),
+      ]
+    })
+  </script>
+  <script id="65" type="text/x-typescript" pinned="">
+    import { solveQP } from "quadprog";
+
+    const A = new Float64Array([mean1, mean1Spain, mean2, mean2Spain]);
+    display(A);
+    const N = 2;
+    const M = 2;
+    const AtA = [];
+    for (let i = 1; i <= N; i++) {
+      AtA[i] = [];
+      for (let j = 1; j <= N; j++) {
+        let sum = 0;
+        for (let k = 0; k < M; k++) sum += A[k*N+(i-1)] * A[k*N+(j-1)];
+        AtA[i][j] = sum;
+      }
+    }
+    display(AtA);
+
+    const b = projectionResults[32].pcCoordinates.slice(0,2);
+    display(b);
+
+    const Atb = [];
+    for (let i = 1; i <= N; i++) {
+      let sum = 0;
+      for (let k = 0; k < M; k++) {
+        sum += A[k*N+(i-1)] * b[k];
+      }
+      Atb[i] = sum;
+    }
+
+   const Amat = [
+    undefined,
+    [undefined, 1, 1, 0],
+    [undefined, 1, 0, 1]
+   ];
+
+    const bvec = [undefined, 1, 0, 0];
+
+    const meq = 1;
+
+    const result = solveQP(AtA, Atb, Amat, bvec, meq);
+    display(result);
+
+  </script>
+  <script id="64" type="text/x-typescript" pinned="">
+    Plot.plot({
+      color: {legend: true},
+      marks: [
+        Plot.dot(refDat, {x: d => -d.pc2, y: "pc1", filter: d => d.pop === "Spain",  fill: "group", opacity: 0.3, tip: true, title: d => d.pop}),
+        Plot.dot([{x: -mean2Spain, y: mean1Spain}], {x: "x", y: "y", fill: "red"}),
+        Plot.dot(refDat, {x: d => -d.pc2, y: "pc1", filter: d => d.pop === "Germany",  fill: "group", opacity: 0.3, tip: true, title: d => d.pop}),
+        Plot.dot([{x: -mean2, y: mean1}], {x: "x", y: "y", fill: "red"}),
+        Plot.dot([{x: -b[1], y: b[0]}], {x: "x", y: "y", fill: "green"}),
+        Plot.dot(projResultTable, {x: d => -d.pc2, y: "pc1", filter: d => d.nonMissing > 20000}),
+      ]
+    })
+  </script>
+
+
+  <script id="6" type="text/markdown">
+    # Appendix
+  </script>
+  <script id="9" type="text/x-typescript" pinned="">
+    import { readBimData, readFamData, readBedData, readSnpWeights, getOverlapMasks, reducePcWeights,
+           extractAndTransposeGenotypes, projectSamples, generateEllipse } from './pca_projection.browser.js';
+  </script>
+</notebook>
+
+
+

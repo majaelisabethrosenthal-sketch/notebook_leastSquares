@@ -762,7 +762,7 @@ p .plot-d6a7b5 {
   unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
     </style>
-  <meta name="generator" content="Observable Notebook Kit v1.8.0"><title>Least Squares</title>  <script type="module" crossorigin src="./assets/index-BOf3PC_Q.js"></script>
+  <meta name="generator" content="Observable Notebook Kit v1.8.0"><title>Least Squares</title>  <script type="module" crossorigin src="./assets/index-BJBjq7zR.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/chunk-BQ-_32WO.js">
   <link rel="modulepreload" crossorigin href="./assets/preload-helper-DXINVdbW.js">
   <link rel="modulepreload" crossorigin href="./assets/fileAttachment-Do9GDfXx.js">
@@ -773,7 +773,7 @@ p .plot-d6a7b5 {
 <p>The least-squares problem is a fundamental problem in numerical linear algebra and statistics. Given a matrix <code>A</code> and a vector <code>b</code>, the least-squares problem is to find a vector <code>x</code> that minimizes the Euclidean norm of the residual <code>R = b - A*x</code>. The solution to this problem can be computed using the <code>dgels</code> function, which is part of the LAPACK library.</p>
 <p>The <code>dgels</code> function computes the least-squares solution to a linear system of equations. It can handle both overdetermined systems (where there are more equations than unknowns) and underdetermined systems (where there are more unknowns than equations). The function uses QR factorization to compute the solution efficiently.</p>
 <p>In this notebook, we will demonstrate how to use the <code>dgels</code> function to solve a least-squares problem in JavaScript. We will simulate some data, fit a linear model to the data using least squares, and visualize the results.</p>
-<p>Additionally we will calculate the Residual Sum of Squares (RSS), using the <code>dgels</code> function. And with the help of the <code>dtrtri</code> function we will calculate the variance-covariance matrix to first get and visualize the standard error bars and then the error ellipse.</p>
+<p>Additionally we will calculate the Residual Sum of Squares (RSS), using the <code>dgels</code> function. And with the help of the <code>dtrtri</code> function we will calculate the variance-covariance matrix to first get and visualize the standard error bars and then the error ellipse. (see <a href="./nonVanishingCovariance.html">Testing non-vanishing covariance</a>)</p>
 </div></div><div id="cell-2" class="observablehq observablehq--cell"><div><p>Let us first simulate some data under a simple linear model:
 We generate 20 points for an independent variable x on a linear grid and compute the response variable y using a true slope (y=2x) combined with added Gaussian noise (=2) to emulate real-world measurement uncertainty.</p>
 </div></div><div id="cell-3" class="observablehq observablehq--cell"></div><pre data-language="js"><code class="language-js"><span class="tok-keyword">import</span> <span class="tok-definition">normal</span> <span class="tok-keyword">from</span> <span class="tok-string">'https://cdn.jsdelivr.net/gh/stdlib-js/random-base-normal@esm/index.mjs'</span>;

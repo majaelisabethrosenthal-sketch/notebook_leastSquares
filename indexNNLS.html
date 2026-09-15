@@ -1,0 +1,126 @@
+<!doctype html>
+<notebook theme="air">
+  <title>Non negative least Squares</title>
+  <script id="1" type="text/markdown">
+    # Non negative least Squares
+  </script>
+  <script id="2" type="text/markdown">
+    Non-negative least-squares is a type of constrained least-squares problem where the coefficients are not allowed to become negative. 
+    Given a matrix `A` and a vector of response variables `b`, the goal is to find a vector `x` that minimizes the Euclidean norm of the residual `R = b - A*x`, subject to ${tex`x \ge 0`}. 
+    Here ${tex`x \ge 0`} means that each component of the vector `x` should be non-negative. 
+
+    This can be further extended by adding a sum-to-one constraint (${tex`\sum x_i = 1`}), which restricts the coefficients to form a convex combination or mixture proportions that add up to 100%.
+
+    To solve this constrained optimization problem in JavaScript, you can use the `quadprog npm` package, which is a direct port of the classic quadratic programming solver from R (originally derived from Fortran).
+    
+    The `quadprog npm` package expects the general quadratic programming formulation 
+
+    ${tex`\begin{aligned}
+    \text{minimize} \quad & -d^T x + \frac{1}{2} x^T D x \\
+    \text{subject to} \quad & Amat^T x \geq bvec
+    \end{aligned}`}
+    
+    which is mathematically equivalent to our least-squares problem ${tex` \text{minimize} \quad \|Ax - b\|^2`}, just expanded, divided by 2, and with the constant term ${tex`b^Tb`} dropped.
+    
+    Note: in the general quadratic programming formulation, ${tex`Amat`} and ${tex`bvec`} are NOT our matrix ${tex`A`} and vector ${tex`b`}. Instead they encode our constraints ${tex`x \ge 0`} and ${tex`\sum x_i = 1`}.
+    
+    Also note that ${tex`D=A^TA`} and ${tex`d=Aᵀb`}.
+
+    Here we want to test the `quadprog npm` package. 
+  </script>
+  <script id="10" type="module" pinned="">
+    import normal from 'https://cdn.jsdelivr.net/gh/stdlib-js/random-base-normal@esm/index.mjs';
+    import uniform from 'https://cdn.jsdelivr.net/gh/stdlib-js/random-base-uniform@esm/index.mjs';
+    import { solveQP } from "quadprog";
+
+    const M = 20;
+    const N = 2;
+    const A = new Float64Array(M * N);
+    for (let i = 0; i < M; i++) {
+      A[i * N + 0] = uniform(0,5);
+      A[i * N + 1] = uniform(0,5);
+    }
+
+    const b = new Float64Array(M);
+    for (let i = 0; i < M; i++) {
+        b[i] = A[i * N + 0] * 0.7 + A[i * N + 1] * 0.3 + normal(0, 1);
+    }
+
+    const b_negative = new Float64Array(M);
+    for (let i = 0; i < M; i++) {
+      b_negative[i] = A[i * N + 0] * (-0.7) + A[i * N + 1] * (-0.3) + normal(0, 1);
+    }
+
+    const AtA = [];
+    for (let i = 1; i <= N; i++) {
+      AtA[i] = [];
+      for (let j = 1; j <= N; j++) {
+        let sum = 0;
+        for (let k = 0; k < M; k++) sum += A[k*N+(i-1)] * A[k*N+(j-1)];
+        AtA[i][j] = sum;
+      }
+    }
+
+    const AtA_copy = [];
+    for (let i = 1; i <= N; i++) {
+      AtA_copy[i] = [];
+      for (let j = 1; j <= N; j++) {
+        let sum = 0;
+        for (let k = 0; k < M; k++) sum += A[k*N+(i-1)] * A[k*N+(j-1)];
+        AtA_copy[i][j] = sum;
+      }
+    }    
+
+    const Atb = [];
+    for (let i = 1; i <= N; i++) {
+      let sum = 0;
+      for (let k = 0; k < M; k++) {
+        sum += A[k*N+(i-1)] * b[k];
+      }
+      Atb[i] = sum;
+    }
+
+
+    const Atb_neg = [];
+    for (let i = 1; i <= N; i++) {
+      let sum = 0;
+      for (let k = 0; k < M; k++) {
+        sum += A[k*N+(i-1)] * b_negative[k];
+      }
+      Atb_neg[i] = sum;
+    }
+
+    /*
+    const Amat = [];
+    Amat[1] = [];
+    Amat[1][1] = 1; Amat[1][2] = 1; Amat[1][3] = 0;  
+
+    Amat[2] = [];
+    Amat[2][1] = 1; Amat[2][2] = 0; Amat[2][3] = 1;  
+    */
+   const Amat = [
+    undefined,
+    [undefined,1,1,0],
+    [undefined,1,0,1]
+   ];
+
+    display(Amat); 
+
+    const bvec = [undefined, 1, 0, 0];
+    /*
+    const bvec = [];
+    bvec[1] = 1; bvec[2] = 0; bvec[3] = 0;
+    */
+
+    const meq = 1;
+
+    const result = solveQP(AtA, Atb, Amat, bvec, meq);
+    const result_negative = solveQP(AtA_copy, Atb_neg, Amat, bvec, meq);
+    display(result);
+    display(result_negative);
+
+  </script>
+
+
+
+</notebook>
