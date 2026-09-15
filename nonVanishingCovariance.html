@@ -1,0 +1,139 @@
+<!doctype html>
+<notebook theme="air">
+  <title>correlation</title>
+  <script id="1" type="text/markdown">
+    # Testing non-vanishing covariance
+  </script>
+  <script id="2" type="text/markdown">
+    To test the correctness of our calculated variance-covariance matrix we will simulate data with correlated x values.
+
+    For a variance ${tex`\sigma^2 = 1`} and a correlation ${tex`\rho`} a covariance matrix is given by 
+    
+    ${tex`\Sigma = \begin{pmatrix} 1 & \rho \\ \rho & 1 \end{pmatrix}`}
+
+    With the Cholesky decomposition we can create a correlated 10x2 matrix where column one can be calculated as ${tex`1*z_1 + 0*z_2 = z_1`} and column 2 as ${tex`\rho * z_1 + \sqrt{1 - \rho^2} * z_2`} with ${tex`z_1`} und ${tex`z_2`} being random independent values. 
+
+  </script>
+  <script id="3" type="module" pinned="">
+    import { dgels , dtrtri, extractMatrix, transposeMatrix, MatrixMultiplication, extractStandardErrors, computeEllipseValues, generateEllipse, generateEllipseAxes} from "./pca_projection.browser.js";
+    import normal from 'https://cdn.jsdelivr.net/gh/stdlib-js/random-base-normal@esm/index.mjs';
+    const M = 10;
+    const N = 2; 
+    const rho = 0.7;
+
+    const A = new Float64Array(M * N);
+    for (let i = 0; i < M; i++) {
+        const z1 = normal(0, 1);
+        const z2 = normal(0, 1);
+        A[i * N + 0] = z1;
+        A[i * N + 1] = rho * z1 + Math.sqrt(1 - rho * rho) * z2;
+    }
+
+    const A_copy = new Float64Array(A);
+    const b = new Float64Array(M);
+    for (let i = 0; i < M; i++) {
+        b[i] = 2 * A[i * N + 0] + (-1) * A[i * N + 1] + normal(0, 2);
+    }
+    const b_copy = new Float64Array(b);
+    display(A_copy);
+    display(b_copy);
+    
+  </script> 
+  <script id="4" type="module" pinned="">
+    dgels( 'row-major', 'no-transpose', M, N, 1, A, N, b, 1 );
+    const fittedSlope = b.slice(0,N);
+    const rss = b.slice(N).reduce( (acc, val) => acc + val*val, 0 );
+    display(fittedSlope);
+    display(rss);
+  </script>
+
+  <script id="5" type="module" pinned="">
+    const R = extractMatrix(A, N);
+
+    const R_T = transposeMatrix(R, N);
+    
+    dtrtri('row-major', 'upper', 'non-unit', N, R, N);
+    dtrtri('row-major', 'lower', 'non-unit', N, R_T, N);
+
+    const RtR_inv = MatrixMultiplication(R, R_T, N); 
+
+    const sigma_2 = rss / (M - N);
+    //const sigma_2 = 4
+    //display(sigma_2);
+    const var_covar_matrix = new Float64Array(N * N);
+    for (let i = 0; i < RtR_inv.length; i++) {
+        var_covar_matrix[i] = RtR_inv[i] * sigma_2;
+    }
+    display(var_covar_matrix);
+
+    const SE = extractStandardErrors(var_covar_matrix, N)
+    display([SE]);
+  </script>
+  <script id="6" type="text/markdown">
+    Let us now verify empirically via Monte Carlo simulation. We repeat the simulation many times and compare the empirical variance of the estimated slopes to the theoretical variance-covariance matrix.
+  </script>
+  <script id="7" type="module" pinned="">
+    const n = 20000;
+    const beta1_samples = new Float64Array(n);
+    const beta2_samples = new Float64Array(n);
+    const rss_samples = new Float64Array(n); 
+
+    for (let t = 0; t < n; t++) {
+        const A_t = new Float64Array(A_copy);
+        const b_t = new Float64Array(M);
+        for (let i = 0; i < M; i++) {
+        b_t[i] = 2 * A_t[i * N + 0] + (-1) * A_t[i * N + 1] + normal(0, 2);
+        }
+        dgels('row-major', 'no-transpose', M, N, 1, A_t, N, b_t, 1);
+        beta1_samples[t] = b_t[0];
+        beta2_samples[t] = b_t[1];
+        rss_samples[t] = b_t.slice(N).reduce((acc, val) => acc + val*val, 0);
+    }
+
+    let mean1 = 0;
+    let mean2 = 0;
+    let meanRSS = 0;
+    for (let t = 0; t < n; t++) {
+        mean1 += beta1_samples[t];
+        mean2 += beta2_samples[t];
+        meanRSS += rss_samples[t];
+    }
+    mean1 /= n;
+    mean2 /= n;
+    meanRSS /= n;
+
+    const expected_rss = 4 * (M - N); // since sigma^2 = rss / (M - N) <-> rss = sigma^2 * (M - N)
+
+    let var1 = 0, var2 = 0, cov12 = 0;
+    for (let t = 0; t < n; t++) {
+        const d1 = beta1_samples[t] - mean1;
+        const d2 = beta2_samples[t] - mean2;
+        var1 += d1 * d1;
+        var2 += d2 * d2;
+        cov12 += d1 * d2;
+    }
+    var1 /= (n - 1);
+    var2 /= (n - 1);
+    cov12 /= (n - 1);
+
+    
+</script>
+<script id="6" type="text/markdown">
+    Finally we can also calculate ${tex`Cov(\hat{\beta}_1, \hat{\beta}_2) = -\frac{\rho\sigma^2}{n(1-\rho^2)}`}. 
+
+</script>
+<script id="7" type="module" pinned="">
+const theoreticalCov12 = -(rho * 4) / (M * (1 - rho*rho)); // sigma²=4
+display({
+        empirical_mean: [mean1, mean2],
+        fittedSlope,
+        empirical_var_covar: [[var1, cov12], [cov12, var2]],
+        theoretical_var_covar: Array.from(var_covar_matrix),
+        theoreticalCov12,
+        meanRSS,
+        expected_rss,
+        rss
+    });
+</script>
+
+</notebook>

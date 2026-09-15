@@ -1,0 +1,194 @@
+<!doctype html>
+<notebook theme="cotton">
+  <title>Testing missingness</title>
+  <script id="1" type="text/markdown">
+    # Testing missingness
+  </script>
+  <script id="2" type="text/markdown">
+    In our PCA projection the principal components derived across all SNPs are strictly orthogonal. Because these axes are orthogonal, their mathematical covariance is zero, which means the principal axes of the resulting confidence ellipse align perfectly with the coodinate axes. 
+    
+    However, real-word datasets feature missing data. 
+    When computing covariances or projections with missingness, analyses rely only on the subset of overlapping non-missing SNPs.
+    This subset is a random sub-sample of the originally orthogonal set making it no longer orthogonal. There is a small residual correlation. So the covariance will not be zero anymore, which will also let the error ellipse tilt. The more missingness you have this effect becomes even more visable.
+
+    We here want to test this.
+
+    Let us first load real data as we do in [PCA projection](./pca_projection.html).
+  </script>
+  <script id="3" type="text/markdown">
+    ### Weight Data
+  </script>
+  <script id="3" type="module" pinned="">
+    const weightDat = FileAttachment("data/Joscha_HiRes_WestEurasia_weights_with_freqs.txt")
+      .text().then(t => readSnpWeights(t));
+  </script>
+  <script id="4" type="text/markdown">
+    ### Plink Data
+  </script>
+  <script id="5" type="text/x-typescript" pinned="">
+    const gretzingerPlinkData = await (async () => {
+      const bimDat = await FileAttachment("data/2024_Gretzinger_EarlyCelts.bim").text().then(t => readBimData(t));
+      const famDat = await FileAttachment("data/2024_Gretzinger_EarlyCelts.fam").text().then(t => readFamData(t));
+      const bedDat = await FileAttachment("data/2024_Gretzinger_EarlyCelts.bed")
+        .arrayBuffer()
+        .then(a => readBedData(a, bimDat.snpIDs.length, famDat.indNames.length));
+      return { bimDat, famDat, bedDat, numSnps: bimDat.snpIDs.length, numInds: famDat.indNames.length };
+    })()
+    const plinkDat = gretzingerPlinkData;
+  </script>
+  <script id="6" type="text/markdown">
+    ## Overlap and alignment between SNP weights and data to be projected
+  </script>
+  <script id="7" type="text/x-typescript" pinned="">
+    const overlap = display(getOverlapMasks(plinkDat.bimDat, weightDat));
+  </script>
+  <script id="8" type="text/x-typescript" pinned="">
+    const {pcWeights : reducedPcWeights, frequencies : reducedFrequencies} = display(reducePcWeights(weightDat, overlap))
+  </script>
+  <script id="9" type="text/markdown">
+    ### Reducing the genotype data to the overlap
+  </script>
+  <script id="10" type="text/x-typescript" pinned="">
+    const genoMatrix = display(extractAndTransposeGenotypes(plinkDat.bedDat, plinkDat.numSnps, plinkDat.numInds, overlap))
+  </script>
+  <script id="100" type="text/markdown">
+    ## Injecting missingness
+    Now here is were we can manipulate the genoMatrix by adding missingness (3).
+  </script>
+  <script id="101" type="text/x-typescript">
+    const fakeGenotypes = new Uint8Array(genoMatrix);
+    const totalValues = plinkDat.numInds * overlap.nrIncluded;
+    for (let i = 0; i < totalValues; i++) {
+            if (Math.random() < 0.9) {
+                fakeGenotypes[i] = 3;
+            }
+        }
+    display(fakeGenotypes);
+  </script>
+
+  <script id="11" type="text/markdown">
+    ## Testing the PCA projection
+  </script>
+  <script id="12" type="text/x-typescript" pinned="">
+    const params = display(await FileAttachment("data/Joscha_HiRes_WestEurasia_parameters.json").json())
+  </script>
+  <script id="13" type="text/x-typescript" pinned="">
+    const projectionResults = display(projectSamples(genoMatrix, reducedPcWeights, reducedFrequencies, plinkDat.numInds, weightDat.numPCs, params.nSNPs, params.yScale, params.eigenValues))
+    const projectionResults_fakeGenome = display(projectSamples(fakeGenotypes, reducedPcWeights, reducedFrequencies, plinkDat.numInds, weightDat.numPCs, params.nSNPs, params.yScale, params.eigenValues))
+</script>
+  <script id="14" type="text/x-typescript" pinned="">
+    const projResultTable = projectionResults.map(o => ({
+      nonMissing: o.nonMissingCount, 
+      pc1: o.pcCoordinates[0], 
+      pc2: o.pcCoordinates[1], 
+      sigma2: o.sigma2,
+      SE_pc1: o.SE[0], 
+      SE_pc2: o.SE[1],
+      ellipse: o.ellipse,
+      covariance: o.covariance,
+      majorAxis: o.axes[0],
+      minorAxis: o.axes[1]
+    }))
+    display(Inputs.table(projResultTable));
+    display(projResultTable.map(d => d.covariance)); 
+
+    const projResultTable_fake_genome = projectionResults_fakeGenome.map(o => ({
+      nonMissing: o.nonMissingCount, 
+      pc1: o.pcCoordinates[0], 
+      pc2: o.pcCoordinates[1], 
+      sigma2: o.sigma2,
+      SE_pc1: o.SE[0], 
+      SE_pc2: o.SE[1],
+      ellipse: o.ellipse,
+      covariance: o.covariance,
+      majorAxis: o.axes[0],
+      minorAxis: o.axes[1]
+    }))
+    display(Inputs.table(projResultTable_fake_genome));
+    display(projResultTable_fake_genome.map(d => d.covariance)); 
+
+  </script>
+  <script id="103" type="text/markdown">
+    Here one can already see the differnce in the covariance of our fake genome.
+  </script>
+
+  <script id="15" type="text/markdown">
+    ## Plotting the projection onto the reference data
+  </script>
+  <script id="16" type="text/x-typescript">
+    const refDat = FileAttachment("data/Joscha_HiRes_WestEurasia_evec_with_groups.tsv")
+      .tsv({array: false, typed: true})
+      .then(d => d.map(r => {
+        return {
+          id: r.id,
+          pc1: r.pc1,
+          pc2: r.pc2,
+          group: r.group,
+          pop: r.pop
+        }
+      }))
+  </script>
+  <script id="17" type="text/x-typescript" pinned="">
+    Inputs.table(refDat)
+  </script>
+  <script id="19" type="text/markdown">
+    ## Plotting the projection onto the reference data with error ellipse
+  </script>  
+  <script id="21" type="module" pinned="">
+      const allEllipsePoints = projectionResults
+        .filter(o => o.nonMissingCount > 20000)
+        .flatMap((o, idx) => 
+          o.ellipse.map(p => ({ ...p, personId: idx }))
+        );
+      const allEllipsePoints_fakegenome = projectionResults_fakeGenome
+        .filter(o => Math.abs(o.covariance) > 1e-6)
+        .flatMap((o, idx) => 
+          o.ellipse.map(p => ({ ...p, personId: idx }))
+        );
+  </script>
+  <script id="22" type="module" pinned="">
+      Plot.plot({
+        color: {legend: true, scheme: "reds"},
+        marks: [
+          Plot.dot(refDat, {x: d => -d.pc2, y: "pc1", fill: "lightgray", opacity: 0.3, tip: true, title: d => d.pop}),
+          Plot.dot(projResultTable, {x: d => -d.pc2, y: "pc1", fill: "sigma2", filter: d => d.nonMissing > 20000, tip: true, title: d => d.sigma2}),
+          Plot.line(allEllipsePoints, {x: "x", y: "y", z: "personId", stroke: "black", strokeOpacity: 0.5})
+        ]
+      })
+  </script>
+  <script id="104" type="text/markdown">
+    ## Plotting the fake genome projection onto the reference data with error ellipse
+  </script> 
+  <script id="105" type="module" pinned="">
+      Plot.plot({
+        color: {legend: true, scheme: "reds"},
+        marks: [
+          Plot.dot(refDat, {x: d => -d.pc2, y: "pc1", fill: "lightgray", opacity: 0.3, tip: true, title: d => d.pop}),
+          Plot.dot(projResultTable_fake_genome, {x: d => -d.pc2, y: "pc1", fill: "sigma2", filter: d => Math.abs(d.covariance) > 1e-6, tip: true, title: d => d.sigma2}),
+          Plot.line(allEllipsePoints_fakegenome, {x: "x", y: "y", z: "personId", stroke: "black", strokeOpacity: 0.5}),
+          Plot.link(projResultTable_fake_genome, {x1: d => d.majorAxis.x1, y1: d => d.majorAxis.y1 , x2: d => d.majorAxis.x2 , y2: d => d.majorAxis.y2, filter: d => Math.abs(d.covariance) > 1e-6, stroke: "black", strokeOpacity: 0.9, markerEnd: "arrow"}),
+          Plot.link(projResultTable_fake_genome, {x1: d => d.minorAxis.x1, y1: d => d.minorAxis.y1 , x2: d => d.minorAxis.x2 , y2: d => d.minorAxis.y2, filter: d => Math.abs(d.covariance) > 1e-6, stroke: "black", strokeOpacity: 0.9, markerEnd: "arrow"}),
+          ]
+      })
+  </script>
+
+  <script id="23" type="module" pinned="">
+      Plot.plot({
+        color: {legend: true, scheme: "reds"},
+        marks: [
+          Plot.dot(refDat, {x: d => -d.pc2, y: "pc1", fill: "lightgray", opacity: 0.3, tip: true, title: d => d.pop}),
+          Plot.dot(projResultTable, {x: d => -d.pc2, y: "pc1", fill: "sigma2", filter: d => d.nonMissing > 20000, tip: true, title: d => d.sigma2}),
+          Plot.link(projResultTable, {x1: d => d.majorAxis.x1, y1: d => d.majorAxis.y1 , x2: d => d.majorAxis.x2 , y2: d => d.majorAxis.y2, filter: d => d.nonMissing > 20000, stroke: "black", strokeOpacity: 0.5, markerEnd: "arrow"}),
+          Plot.link(projResultTable, {x1: d => d.minorAxis.x1, y1: d => d.minorAxis.y1 , x2: d => d.minorAxis.x2 , y2: d => d.minorAxis.y2, filter: d => d.nonMissing > 20000, stroke: "black", strokeOpacity: 0.5, markerEnd: "arrow"}),
+        ]
+      })
+  </script>
+  <script id="24" type="text/markdown">
+    # Appendix
+  </script>
+  <script id="25" type="text/x-typescript" pinned="">
+    import { readBimData, readFamData, readBedData, readSnpWeights, getOverlapMasks, reducePcWeights,
+           extractAndTransposeGenotypes, projectSamples, generateEllipse } from './pca_projection.browser.js';
+  </script>
+
+</notebook>
