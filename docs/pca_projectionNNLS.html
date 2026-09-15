@@ -1,0 +1,941 @@
+<!doctype html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style type="text/css">/* Copyright 2025 Observable, Inc. */
+
+:root {
+  --serif: "Source Serif 4 Variable", ui-serif, serif;
+  --sans-serif: "Inter Variable", ui-sans-serif, sans-serif;
+  --monospace: "Spline Sans Mono Variable", Menlo, Consolas, monospace;
+  --monospace-font: 14px/1.5 var(--monospace);
+  --max-width: calc(1024px - 4 * 16px); /* max-w-5xl p-4 */
+}
+
+html {
+  font: 17px/1.5 var(--serif);
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--theme-background);
+  color: var(--theme-foreground);
+  margin: 16px 0;
+  padding: 16px 24px;
+}
+
+main {
+  margin: auto;
+  max-width: var(--max-width);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--theme-foreground-alt);
+  font-weight: 700;
+  line-height: 1.15;
+  margin-top: 0;
+  margin-bottom: 0.25rem;
+  text-wrap: balance;
+}
+
+h2 + p,
+h3 + p,
+h4 + p,
+h2 + table,
+h3 + table,
+h4 + table {
+  margin-top: 0;
+}
+
+.observablehq:first-of-type h1 + h2 {
+  color: var(--theme-foreground);
+  font-size: 20px;
+  font-style: italic;
+  font-weight: normal;
+  margin-bottom: 1rem; /* see h2 ~ p */
+}
+
+a[href] {
+  color: var(--theme-foreground-focus);
+  text-decoration: none;
+}
+
+a[href]:hover,
+a[href]:focus {
+  text-decoration: underline;
+}
+
+pre,
+code,
+tt {
+  font-family: var(--monospace);
+  font-size: 82.35294117%; /* from 17px to 14px */
+}
+
+pre code,
+figcaption code {
+  font-size: inherit;
+}
+
+pre[data-language] {
+  position: relative;
+}
+
+pre[data-language]::before {
+  content: attr(data-language);
+  position: sticky;
+  top: 0;
+  left: 0;
+  height: 0;
+  display: block;
+  text-align: right;
+  margin-right: -4px;
+  pointer-events: none;
+  font-size: 12px;
+  line-height: 21px;
+  color: var(--theme-foreground-muted);
+}
+
+h1 code,
+h2 code,
+h3 code,
+h4 code,
+h5 code,
+h6 code {
+  font-size: 88.235294117%; /* from 17px to 15px */
+}
+
+h2[id] a[href],
+h3[id] a[href] {
+  color: inherit;
+}
+
+pre {
+  line-height: 1.5;
+}
+
+img {
+  max-width: 100%;
+}
+
+p,
+table,
+figure,
+figcaption,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.katex-display {
+  max-width: 640px;
+}
+
+blockquote,
+ol,
+ul {
+  max-width: 600px;
+}
+
+blockquote {
+  margin: 1rem 1.5rem;
+}
+
+ul,
+ol {
+  padding-left: 28px;
+}
+
+hr {
+  height: 1px;
+  margin: 1rem 0;
+  padding: 1rem 0;
+  border: none;
+  background: no-repeat center/100% 1px
+    linear-gradient(to right, var(--theme-foreground-faintest), var(--theme-foreground-faintest));
+}
+
+pre {
+  background-color: var(--theme-background-alt);
+  border-radius: 4px;
+  margin: 1rem -1rem;
+  min-height: 1.5em;
+  padding: 4px 1rem;
+  overflow-x: auto;
+  overscroll-behavior-x: none;
+  box-sizing: border-box;
+}
+
+pre > code:only-child {
+  display: block;
+  width: fit-content;
+}
+
+input:not([type]),
+input[type="email"],
+input[type="number"],
+input[type="password"],
+input[type="range"],
+input[type="search"],
+input[type="tel"],
+input[type="text"],
+input[type="url"] {
+  width: 240px;
+}
+
+input,
+canvas,
+button {
+  vertical-align: middle;
+}
+
+button,
+input,
+textarea {
+  accent-color: var(--theme-foreground-focus);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 13px/1.2 var(--sans-serif);
+}
+
+table pre,
+table code,
+table tt {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+th > pre:only-child,
+td > pre:only-child {
+  margin: 0;
+  padding: 0;
+}
+
+th {
+  color: var(--theme-foreground);
+  text-align: left;
+  vertical-align: bottom;
+}
+
+td {
+  color: var(--theme-foreground-alt);
+  vertical-align: top;
+}
+
+th,
+td {
+  padding: 3px 6.5px 3px 0;
+}
+
+th:last-child,
+td:last-child {
+  padding-right: 0;
+}
+
+tr:not(:last-child) {
+  border-bottom: solid 1px var(--theme-foreground-faintest);
+}
+
+thead tr {
+  border-bottom: solid 1px var(--theme-foreground-fainter);
+}
+
+figure,
+table {
+  margin: 1rem 0;
+}
+
+figure img {
+  max-width: 100%;
+}
+
+figure > h2,
+figure > h3 {
+  font-family: var(--sans-serif);
+}
+
+figure > h2 {
+  font-size: 20px;
+}
+
+figure > h3 {
+  font-size: 16px;
+  font-weight: normal;
+}
+
+figcaption {
+  font: small var(--sans-serif);
+  color: var(--theme-foreground-muted);
+}
+
+.observablehq--collapsed,
+.observablehq--expanded.observablehq--inspect a {
+  cursor: pointer;
+}
+
+.observablehq--caret {
+  margin-right: 4px;
+  vertical-align: baseline;
+}
+
+.observablehq--field {
+  text-indent: -1rem;
+  margin-left: 1rem;
+}
+
+.observablehq--inspect {
+  font: var(--monospace-font);
+  overflow-x: auto;
+  white-space: pre;
+  display: block;
+  padding: 2px 0;
+}
+
+.observablehq--inspect.observablehq--import {
+  white-space: normal;
+}
+
+.observablehq--inspect::-webkit-scrollbar {
+  display: none;
+}
+
+.observablehq--error .observablehq--inspect {
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+.observablehq--string-expand {
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-size: 80%;
+  background: var(--theme-background-alt);
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.observablehq--keyword {
+  color: var(--syntax-keyword);
+}
+
+.observablehq--index,
+.observablehq--key {
+  color: var(--syntax-definition);
+}
+
+.observablehq--symbol,
+.observablehq--regexp,
+.observablehq--string {
+  color: var(--syntax-string);
+}
+
+.observablehq--null {
+  color: var(--syntax-keyword);
+}
+
+.observablehq--undefined {
+  color: var(--syntax-variable);
+}
+
+.observablehq--prototype-key {
+  color: var(--syntax-comment);
+}
+
+.observablehq--bigint,
+.observablehq--boolean,
+.observablehq--date,
+.observablehq--forbidden,
+.observablehq--number {
+  color: var(--syntax-literal);
+}
+
+.observablehq--error {
+  color: var(--theme-error);
+}
+
+.observablehq--cell {
+  margin: 17px 0;
+  min-height: 1px; /* prevent margin collapse when empty */
+}
+
+.tok-link {
+  color: var(--syntax-link);
+}
+
+.tok-strong {
+  font-weight: 600;
+}
+
+.tok-emphasis {
+  font-style: italic;
+}
+
+.tok-keyword {
+  color: var(--syntax-keyword);
+}
+
+.tok-atom {
+  color: var(--syntax-atom);
+}
+
+.tok-literal {
+  color: var(--syntax-literal);
+}
+
+.tok-string {
+  color: var(--syntax-string);
+}
+
+.tok-comment {
+  color: var(--syntax-comment);
+}
+
+.tok-invalid {
+  color: var(--syntax-invalid);
+}
+
+.tok-variable {
+  color: var(--syntax-variable);
+}
+
+.tok-definition {
+  color: var(--syntax-definition);
+}
+
+.tok-meta {
+  color: var(--syntax-meta);
+}
+
+.plot-d6a7b5 {
+  --plot-background: var(--theme-background);
+}
+
+p .plot-d6a7b5 {
+  display: inline-block;
+}
+
+.observablehq--cell:empty {
+  min-height: 0;
+}
+
+.observablehq--cell:not(:empty) + pre {
+  margin-top: -11px;
+}
+
+/* inter-cyrillic-ext-wght-normal */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./assets/inter-cyrillic-ext-wght-normal-BOeWTOD4.woff2) format('woff2-variations');
+  unicode-range: U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
+}
+
+/* inter-cyrillic-wght-normal */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./assets/inter-cyrillic-wght-normal-DqGufNeO.woff2) format('woff2-variations');
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+
+/* inter-greek-ext-wght-normal */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./assets/inter-greek-ext-wght-normal-DlzME5K_.woff2) format('woff2-variations');
+  unicode-range: U+1F00-1FFF;
+}
+
+/* inter-greek-wght-normal */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./assets/inter-greek-wght-normal-CkhJZR-_.woff2) format('woff2-variations');
+  unicode-range: U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF;
+}
+
+/* inter-vietnamese-wght-normal */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./assets/inter-vietnamese-wght-normal-CBcvBZtf.woff2) format('woff2-variations');
+  unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;
+}
+
+/* inter-latin-ext-wght-normal */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./assets/inter-latin-ext-wght-normal-DO1Apj_S.woff2) format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+/* inter-latin-wght-normal */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./assets/inter-latin-wght-normal-Dx4kXJAl.woff2) format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+/* inter-cyrillic-ext-wght-italic */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./assets/inter-cyrillic-ext-wght-italic-B5xAaiFk.woff2) format('woff2-variations');
+  unicode-range: U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
+}
+
+/* inter-cyrillic-wght-italic */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./assets/inter-cyrillic-wght-italic-DzZdc28x.woff2) format('woff2-variations');
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+
+/* inter-greek-ext-wght-italic */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./assets/inter-greek-ext-wght-italic-DcOpz6Lw.woff2) format('woff2-variations');
+  unicode-range: U+1F00-1FFF;
+}
+
+/* inter-greek-wght-italic */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./assets/inter-greek-wght-italic-CILZdfAp.woff2) format('woff2-variations');
+  unicode-range: U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF;
+}
+
+/* inter-vietnamese-wght-italic */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./assets/inter-vietnamese-wght-italic-K3WlGtc8.woff2) format('woff2-variations');
+  unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;
+}
+
+/* inter-latin-ext-wght-italic */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./assets/inter-latin-ext-wght-italic-0pjOp8NU.woff2) format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+/* inter-latin-wght-italic */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./assets/inter-latin-wght-italic-DpCbqKDY.woff2) format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+/* source-serif-4-cyrillic-ext-wght-normal */
+
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(./assets/source-serif-4-cyrillic-ext-wght-normal-cHuGMAiY.woff2) format('woff2-variations');
+  unicode-range: U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
+}
+
+/* source-serif-4-cyrillic-wght-normal */
+
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(./assets/source-serif-4-cyrillic-wght-normal-DwHjdM4S.woff2) format('woff2-variations');
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+
+/* source-serif-4-greek-wght-normal */
+
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(./assets/source-serif-4-greek-wght-normal-ece1310W.woff2) format('woff2-variations');
+  unicode-range: U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF;
+}
+
+/* source-serif-4-vietnamese-wght-normal */
+
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(./assets/source-serif-4-vietnamese-wght-normal-D-yuW59g.woff2) format('woff2-variations');
+  unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;
+}
+
+/* source-serif-4-latin-ext-wght-normal */
+
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(./assets/source-serif-4-latin-ext-wght-normal-CxNHBx-q.woff2) format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+/* source-serif-4-latin-wght-normal */
+
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(./assets/source-serif-4-latin-wght-normal-D9elroTD.woff2) format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+/* source-serif-4-cyrillic-ext-wght-italic */
+
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(./assets/source-serif-4-cyrillic-ext-wght-italic-BXuSHrjR.woff2) format('woff2-variations');
+  unicode-range: U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
+}
+
+/* source-serif-4-cyrillic-wght-italic */
+
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(./assets/source-serif-4-cyrillic-wght-italic-RLIThRd4.woff2) format('woff2-variations');
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+
+/* source-serif-4-greek-wght-italic */
+
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(./assets/source-serif-4-greek-wght-italic-F2ziEGcb.woff2) format('woff2-variations');
+  unicode-range: U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF;
+}
+
+/* source-serif-4-vietnamese-wght-italic */
+
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(./assets/source-serif-4-vietnamese-wght-italic-C3q834ic.woff2) format('woff2-variations');
+  unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;
+}
+
+/* source-serif-4-latin-ext-wght-italic */
+
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(./assets/source-serif-4-latin-ext-wght-italic-CpkvI5hy.woff2) format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+/* source-serif-4-latin-wght-italic */
+
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(./assets/source-serif-4-latin-wght-italic-D2yaqPoE.woff2) format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+/* spline-sans-mono-latin-ext-wght-normal */
+
+@font-face {
+  font-family: 'Spline Sans Mono Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url(./assets/spline-sans-mono-latin-ext-wght-normal-Dh0aNLWd.woff2) format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+/* spline-sans-mono-latin-wght-normal */
+
+@font-face {
+  font-family: 'Spline Sans Mono Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url(./assets/spline-sans-mono-latin-wght-normal-DlaB5ohX.woff2) format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+/* spline-sans-mono-latin-ext-wght-italic */
+
+@font-face {
+  font-family: 'Spline Sans Mono Variable';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url(./assets/spline-sans-mono-latin-ext-wght-italic-RJy045_w.woff2) format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+/* spline-sans-mono-latin-wght-italic */
+
+@font-face {
+  font-family: 'Spline Sans Mono Variable';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url(./assets/spline-sans-mono-latin-wght-italic-DPjO1keU.woff2) format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+    </style>
+  <meta name="generator" content="Observable Notebook Kit v1.8.0"><title>PCA Projection NNLS</title>  <script type="module" crossorigin src="./assets/pca_projectionNNLS-DCi0-E6b.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/chunk-BQ-_32WO.js">
+  <link rel="modulepreload" crossorigin href="./assets/preload-helper-DXINVdbW.js">
+  <link rel="modulepreload" crossorigin href="./assets/fileAttachment-Do9GDfXx.js">
+  <link rel="modulepreload" crossorigin href="./assets/runtime-DnUf8OyF.js">
+</head>
+  <body>
+    <main><div id="cell-1" class="observablehq observablehq--cell"><div><h1>Non-negative least-squares with sum-to-one constraint applied to PCA projection</h1>
+</div></div><div id="cell-2" class="observablehq observablehq--cell"><div><p>We here test out non-negative least-squares, applied to the individuals we projected onto the PCA space, to see a target individual’s PC coordinates to be expressed as a non-negative, sum-to-one mixture of reference populations.
+For example “70% Spain + 30% Germany”, or “50% Italy + 30% Germany + 20% England”.</p>
+<p>This mirrors an admixture-style decomposition: we look for proportions  with  such that</p>
+<h2 id="preparing-pca-projection" tabindex="-1"><a href="#preparing-pca-projection">Preparing PCA projection</a></h2>
+<p>To see how this is done, click <a href="./pca_projection.html">here</a></p>
+</div></div><div id="cell-3" class="observablehq observablehq--cell"></div><div id="cell-8" class="observablehq observablehq--cell"></div><div id="cell-26" class="observablehq observablehq--cell"></div><div id="cell-37" class="observablehq observablehq--cell"></div><div id="cell-48" class="observablehq observablehq--cell"></div><div id="cell-54" class="observablehq observablehq--cell"><div><h2 id="testing-the-pca-projection" tabindex="-1"><a href="#testing-the-pca-projection">Testing the PCA projection</a></h2>
+</div></div><div id="cell-99" class="observablehq observablehq--cell"></div><div id="cell-72" class="observablehq observablehq--cell"></div><div id="cell-100" class="observablehq observablehq--cell"><div><h3 id="projected-data-coordinates" tabindex="-1"><a href="#projected-data-coordinates">Projected data coordinates</a></h3>
+</div></div><div id="cell-55" class="observablehq observablehq--cell"></div><div id="cell-73" class="observablehq observablehq--cell"></div><pre data-language="ts"><code class="language-ts"><span class="tok-variable">display</span>(<span class="tok-variable">Inputs</span>.<span class="tok-definition">table</span>(<span class="tok-variable">projResultTable</span>));</code></pre><div id="cell-56" class="observablehq observablehq--cell"><div><h3 id="reference-data" tabindex="-1"><a href="#reference-data">Reference data</a></h3>
+</div></div><div id="cell-57" class="observablehq observablehq--cell"></div><div id="cell-58" class="observablehq observablehq--cell"></div><pre data-language="ts"><code class="language-ts"><span class="tok-variable">Inputs</span>.<span class="tok-definition">table</span>(<span class="tok-variable">refDat</span>)</code></pre><div id="cell-59" class="observablehq observablehq--cell"></div><pre data-language="ts"><code class="language-ts"><span class="tok-variable">Plot</span>.<span class="tok-definition">plot</span>({
+  <span class="tok-definition">color</span>: {<span class="tok-definition">legend</span>: <span class="tok-literal">true</span>},
+  <span class="tok-definition">marks</span>: [
+    <span class="tok-variable">Plot</span>.<span class="tok-definition">dot</span>(<span class="tok-variable">refDat</span>, {<span class="tok-definition">x</span>: <span class="tok-definition">d</span> =&gt; -<span class="tok-variable">d</span>.<span class="tok-definition">pc2</span>, <span class="tok-definition">y</span>: <span class="tok-string">"pc1"</span>, <span class="tok-definition">fill</span>: <span class="tok-string">"group"</span>, <span class="tok-definition">opacity</span>: <span class="tok-literal">0.3</span>, <span class="tok-definition">tip</span>: <span class="tok-literal">true</span>, <span class="tok-definition">title</span>: <span class="tok-definition">d</span> =&gt; <span class="tok-variable">d</span>.<span class="tok-definition">pop</span>}),
+    <span class="tok-comment">//Plot.dot(refDat, {x: d =&gt; -d.pc2, y: "pc1", fill: "black", filter: d=&gt;d.pop == "Finland_Subset", tip: true, title: d =&gt; d.pop}),</span>
+    <span class="tok-variable">Plot</span>.<span class="tok-definition">dot</span>(<span class="tok-variable">projResultTable</span>, {<span class="tok-definition">x</span>: <span class="tok-definition">d</span> =&gt; -<span class="tok-variable">d</span>.<span class="tok-definition">pc2</span>, <span class="tok-definition">y</span>: <span class="tok-string">"pc1"</span>, <span class="tok-definition">filter</span>: <span class="tok-definition">d</span> =&gt; <span class="tok-variable">d</span>.<span class="tok-definition">nonMissing</span> &gt; <span class="tok-literal">20000</span>}),
+  ]
+})</code></pre><div id="cell-60" class="observablehq observablehq--cell"><div><h2 id="testing-nnls" tabindex="-1"><a href="#testing-nnls">Testing NNLS</a></h2>
+<p>Now we calculate and visualize the non-negative, sum-to-one mixture of reference populations.</p>
+<h3 id="testing-two-reference-groups" tabindex="-1"><a href="#testing-two-reference-groups">Testing two reference groups</a></h3>
+<p>As an initial test, we perform a decomposition using Germany and Spain as reference groups.
+Let us first plot these two groups and their mean.</p>
+</div></div><div id="cell-61" class="observablehq observablehq--cell"></div><pre data-language="ts"><code class="language-ts"><span class="tok-keyword">import</span> { <span class="tok-definition">solveQP</span> } <span class="tok-keyword">from</span> <span class="tok-string">"quadprog"</span>;
+
+<span class="tok-keyword">const</span> <span class="tok-definition">numPCsUsed</span> = <span class="tok-literal">2</span>;
+<span class="tok-keyword">const</span> <span class="tok-definition">populationNames</span> = [<span class="tok-string">"Germany"</span>, <span class="tok-string">"Spain"</span>];
+
+<span class="tok-keyword">const</span> <span class="tok-definition">centroids</span> = <span class="tok-variable">populationNames</span>.<span class="tok-definition">map</span>(<span class="tok-definition">pop</span> =&gt; <span class="tok-variable">getPopulationMean</span>(<span class="tok-variable">refDat</span>, <span class="tok-variable">pop</span>, <span class="tok-variable">numPCsUsed</span>));
+<span class="tok-variable">display</span>(<span class="tok-variable">centroids</span>);
+<span class="tok-keyword">const</span> <span class="tok-definition">AtA</span> = <span class="tok-variable">computeAtA</span>(<span class="tok-variable">centroids</span>, <span class="tok-variable">numPCsUsed</span>);
+<span class="tok-keyword">const</span> <span class="tok-definition">constraints</span> = <span class="tok-variable">buildConstraints</span>(<span class="tok-variable">populationNames</span>.<span class="tok-definition">length</span>);
+
+<span class="tok-keyword">const</span> <span class="tok-definition">individuals</span> = <span class="tok-variable">projectionResults</span>
+  .<span class="tok-definition">filter</span>(<span class="tok-definition">o</span> =&gt; <span class="tok-variable">o</span>.<span class="tok-definition">nonMissingCount</span> &gt; <span class="tok-literal">20000</span>)
+  .<span class="tok-definition">map</span>((<span class="tok-definition">o</span>, <span class="tok-definition">idx</span>) =&gt; ({
+    <span class="tok-definition">individual</span>: <span class="tok-variable">idx</span>,
+    <span class="tok-definition">pc1</span>: <span class="tok-variable">o</span>.<span class="tok-definition">pcCoordinates</span>[<span class="tok-literal">0</span>], 
+    <span class="tok-definition">pc2</span>: <span class="tok-variable">o</span>.<span class="tok-definition">pcCoordinates</span>[<span class="tok-literal">1</span>],
+    <span class="tok-definition">pc3</span>: <span class="tok-variable">o</span>.<span class="tok-definition">pcCoordinates</span>[<span class="tok-literal">2</span>],
+    <span class="tok-definition">pc4</span>: <span class="tok-variable">o</span>.<span class="tok-definition">pcCoordinates</span>[<span class="tok-literal">3</span>], 
+    <span class="tok-definition">pc5</span>: <span class="tok-variable">o</span>.<span class="tok-definition">pcCoordinates</span>[<span class="tok-literal">4</span>],
+    <span class="tok-definition">pc6</span>: <span class="tok-variable">o</span>.<span class="tok-definition">pcCoordinates</span>[<span class="tok-literal">5</span>],
+    <span class="tok-definition">pc7</span>: <span class="tok-variable">o</span>.<span class="tok-definition">pcCoordinates</span>[<span class="tok-literal">6</span>], 
+    <span class="tok-definition">pc8</span>: <span class="tok-variable">o</span>.<span class="tok-definition">pcCoordinates</span>[<span class="tok-literal">7</span>],
+    <span class="tok-definition">pc9</span>: <span class="tok-variable">o</span>.<span class="tok-definition">pcCoordinates</span>[<span class="tok-literal">8</span>],
+    <span class="tok-definition">pc10</span>: <span class="tok-variable">o</span>.<span class="tok-definition">pcCoordinates</span>[<span class="tok-literal">9</span>],
+  }))</code></pre><div id="cell-62" class="observablehq observablehq--cell"></div><pre data-language="ts"><code class="language-ts"><span class="tok-variable">Plot</span>.<span class="tok-definition">plot</span>({
+  <span class="tok-definition">color</span>: {<span class="tok-definition">legend</span>: <span class="tok-literal">true</span>, <span class="tok-definition">domain</span>: [<span class="tok-string">"Germany"</span>, <span class="tok-string">"Spain"</span>]},
+  <span class="tok-definition">marks</span>: [
+    <span class="tok-variable">Plot</span>.<span class="tok-definition">dot</span>(<span class="tok-variable">refDat</span>, {<span class="tok-definition">x</span>: <span class="tok-definition">d</span> =&gt; -<span class="tok-variable">d</span>.<span class="tok-definition">pc2</span>, <span class="tok-definition">y</span>: <span class="tok-string">"pc1"</span>, <span class="tok-definition">filter</span>: <span class="tok-definition">d</span> =&gt; <span class="tok-variable">d</span>.<span class="tok-definition">pop</span> === <span class="tok-string">"Germany"</span>, <span class="tok-definition">fill</span>: <span class="tok-string">"pop"</span>, <span class="tok-definition">opacity</span>: <span class="tok-literal">0.3</span>}),        
+    <span class="tok-variable">Plot</span>.<span class="tok-definition">dot</span>([{<span class="tok-definition">x</span>: -<span class="tok-variable">centroids</span>[<span class="tok-literal">0</span>][<span class="tok-literal">1</span>], <span class="tok-definition">y</span>: <span class="tok-variable">centroids</span>[<span class="tok-literal">0</span>][<span class="tok-literal">0</span>]}], {<span class="tok-definition">x</span>: <span class="tok-string">"x"</span>, <span class="tok-definition">y</span>: <span class="tok-string">"y"</span>, <span class="tok-definition">fill</span>: <span class="tok-string">"red"</span>}),
+    <span class="tok-variable">Plot</span>.<span class="tok-definition">dot</span>(<span class="tok-variable">refDat</span>, {<span class="tok-definition">x</span>: <span class="tok-definition">d</span> =&gt; -<span class="tok-variable">d</span>.<span class="tok-definition">pc2</span>, <span class="tok-definition">y</span>: <span class="tok-string">"pc1"</span>, <span class="tok-definition">filter</span>: <span class="tok-definition">d</span> =&gt; <span class="tok-variable">d</span>.<span class="tok-definition">pop</span> === <span class="tok-string">"Spain"</span>,  <span class="tok-definition">fill</span>: <span class="tok-string">"pop"</span>, <span class="tok-definition">opacity</span>: <span class="tok-literal">0.3</span>}),
+    <span class="tok-variable">Plot</span>.<span class="tok-definition">dot</span>([{<span class="tok-definition">x</span>: -<span class="tok-variable">centroids</span>[<span class="tok-literal">1</span>][<span class="tok-literal">1</span>], <span class="tok-definition">y</span>: <span class="tok-variable">centroids</span>[<span class="tok-literal">1</span>][<span class="tok-literal">0</span>]}], {<span class="tok-definition">x</span>: <span class="tok-string">"x"</span>, <span class="tok-definition">y</span>: <span class="tok-string">"y"</span>, <span class="tok-definition">fill</span>: <span class="tok-string">"red"</span>}),
+    <span class="tok-variable">Plot</span>.<span class="tok-definition">dot</span>(<span class="tok-variable">individuals</span>, {<span class="tok-definition">x</span>: <span class="tok-definition">d</span> =&gt; -<span class="tok-variable">d</span>.<span class="tok-definition">pc2</span>, <span class="tok-definition">y</span>: <span class="tok-string">"pc1"</span>, <span class="tok-definition">tip</span>: <span class="tok-literal">true</span>, <span class="tok-definition">title</span>: <span class="tok-definition">d</span> =&gt; <span class="tok-variable">d</span>.<span class="tok-definition">individual</span>}),
+  ]
+})</code></pre><div id="cell-63" class="observablehq observablehq--cell"><div><p>Now we can calculate  and  and visualize them in a stacked barchart.</p>
+</div></div><div id="cell-64" class="observablehq observablehq--cell"></div><pre data-language="ts"><code class="language-ts"><span class="tok-keyword">const</span> <span class="tok-definition">NNLSResults</span> = <span class="tok-variable">projectionResults</span>
+  .<span class="tok-definition">filter</span>(<span class="tok-definition">o</span> =&gt; <span class="tok-variable">o</span>.<span class="tok-definition">nonMissingCount</span> &gt; <span class="tok-literal">20000</span>)
+  .<span class="tok-definition">map</span>((<span class="tok-definition">o</span>, <span class="tok-definition">idx</span>) =&gt; {
+    <span class="tok-keyword">const</span> <span class="tok-definition">target</span> = <span class="tok-variable">o</span>.<span class="tok-definition">pcCoordinates</span>.<span class="tok-definition">slice</span>(<span class="tok-literal">0</span>, <span class="tok-variable">numPCsUsed</span>);
+    <span class="tok-keyword">const</span> [<span class="tok-definition">alpha</span>, <span class="tok-definition">beta</span>] = <span class="tok-variable">computeNNLS</span>(<span class="tok-variable">centroids</span>, <span class="tok-variable">target</span>, <span class="tok-variable">numPCsUsed</span>, <span class="tok-variable">constraints</span>, <span class="tok-variable">AtA</span>);
+    <span class="tok-keyword">return</span> { <span class="tok-definition">individual</span>: <span class="tok-variable">idx</span>, <span class="tok-definition">Germany</span>: <span class="tok-variable">alpha</span>, <span class="tok-definition">Spain</span>: <span class="tok-variable">beta</span> };
+  });
+
+<span class="tok-variable">display</span>(<span class="tok-variable">Inputs</span>.<span class="tok-definition">table</span>(<span class="tok-variable">NNLSResults</span>));
+
+<span class="tok-keyword">const</span> <span class="tok-definition">longFormatData</span> = <span class="tok-variable">NNLSResults</span>.<span class="tok-definition">flatMap</span>(<span class="tok-definition">d</span> =&gt; [
+  { <span class="tok-definition">individual</span>: <span class="tok-variable">d</span>.<span class="tok-definition">individual</span>, <span class="tok-definition">population</span>: <span class="tok-string">"Germany"</span>, <span class="tok-definition">proportion</span>: <span class="tok-variable">d</span>.<span class="tok-definition">Germany</span> },
+  { <span class="tok-definition">individual</span>: <span class="tok-variable">d</span>.<span class="tok-definition">individual</span>, <span class="tok-definition">population</span>: <span class="tok-string">"Spain"</span>, <span class="tok-definition">proportion</span>: <span class="tok-variable">d</span>.<span class="tok-definition">Spain</span> },
+]);
+</code></pre><div id="cell-65" class="observablehq observablehq--cell"></div><pre data-language="js"><code class="language-js"><span class="tok-variable">Plot</span>.<span class="tok-definition">plot</span>({
+  <span class="tok-definition">color</span>: { <span class="tok-definition">legend</span>: <span class="tok-literal">true</span> },
+  <span class="tok-definition">marks</span>: [
+    <span class="tok-variable">Plot</span>.<span class="tok-definition">barY</span>(<span class="tok-variable">longFormatData</span>, {
+      <span class="tok-definition">x</span>: <span class="tok-string">"individual"</span>,
+      <span class="tok-definition">y</span>: <span class="tok-string">"proportion"</span>,
+      <span class="tok-definition">fill</span>: <span class="tok-string">"population"</span>,
+    })
+  ]
+})</code></pre><div id="cell-66" class="observablehq observablehq--cell"><div><h3 id="testing-three-reference-groups" tabindex="-1"><a href="#testing-three-reference-groups">Testing three reference groups</a></h3>
+<p>Let us now perform a decomposition using Germany, Italy and England as reference groups.</p>
+</div></div><div id="cell-67" class="observablehq observablehq--cell"></div><pre data-language="ts"><code class="language-ts"><span class="tok-keyword">const</span> <span class="tok-definition">numPCsUsed3</span> = <span class="tok-literal">3</span>;
+<span class="tok-keyword">const</span> <span class="tok-definition">populationNames3</span> = [<span class="tok-string">"Germany"</span>, <span class="tok-string">"Italy"</span>, <span class="tok-string">"England"</span>];
+
+<span class="tok-keyword">const</span> <span class="tok-definition">centroids3</span> = <span class="tok-variable">populationNames3</span>.<span class="tok-definition">map</span>(<span class="tok-definition">pop</span> =&gt; <span class="tok-variable">getPopulationMean</span>(<span class="tok-variable">refDat</span>, <span class="tok-variable">pop</span>, <span class="tok-variable">numPCsUsed3</span>));
+<span class="tok-variable">display</span>(<span class="tok-variable">centroids3</span>);
+<span class="tok-keyword">const</span> <span class="tok-definition">AtA3</span> = <span class="tok-variable">computeAtA</span>(<span class="tok-variable">centroids3</span>, <span class="tok-variable">numPCsUsed3</span>);
+<span class="tok-variable">display</span>(<span class="tok-variable">AtA3</span>);
+<span class="tok-keyword">const</span> <span class="tok-definition">constraints3</span> = <span class="tok-variable">buildConstraints</span>(<span class="tok-variable">populationNames3</span>.<span class="tok-definition">length</span>);
+<span class="tok-variable">display</span>(<span class="tok-variable">constraints3</span>)</code></pre><div id="cell-68" class="observablehq observablehq--cell"></div><pre data-language="ts"><code class="language-ts"><span class="tok-variable">Plot</span>.<span class="tok-definition">plot</span>({
+  <span class="tok-definition">color</span>: {<span class="tok-definition">legend</span>: <span class="tok-literal">true</span>, <span class="tok-definition">domain</span>: [<span class="tok-string">"Germany"</span>, <span class="tok-string">"Italy"</span>, <span class="tok-string">"England"</span>]},
+  <span class="tok-definition">marks</span>: [
+    <span class="tok-variable">Plot</span>.<span class="tok-definition">dot</span>(<span class="tok-variable">refDat</span>, {<span class="tok-definition">x</span>: <span class="tok-definition">d</span> =&gt; -<span class="tok-variable">d</span>.<span class="tok-definition">pc2</span>, <span class="tok-definition">y</span>: <span class="tok-string">"pc1"</span>, <span class="tok-definition">filter</span>: <span class="tok-definition">d</span> =&gt; <span class="tok-variable">d</span>.<span class="tok-definition">pop</span> === <span class="tok-string">"Germany"</span>, <span class="tok-definition">fill</span>: <span class="tok-string">"pop"</span>, <span class="tok-definition">opacity</span>: <span class="tok-literal">0.3</span>}),        
+    <span class="tok-variable">Plot</span>.<span class="tok-definition">dot</span>([{<span class="tok-definition">x</span>: -<span class="tok-variable">centroids3</span>[<span class="tok-literal">0</span>][<span class="tok-literal">1</span>], <span class="tok-definition">y</span>: <span class="tok-variable">centroids3</span>[<span class="tok-literal">0</span>][<span class="tok-literal">0</span>]}], {<span class="tok-definition">x</span>: <span class="tok-string">"x"</span>, <span class="tok-definition">y</span>: <span class="tok-string">"y"</span>, <span class="tok-definition">fill</span>: <span class="tok-string">"red"</span>}),
+    <span class="tok-variable">Plot</span>.<span class="tok-definition">dot</span>(<span class="tok-variable">refDat</span>, {<span class="tok-definition">x</span>: <span class="tok-definition">d</span> =&gt; -<span class="tok-variable">d</span>.<span class="tok-definition">pc2</span>, <span class="tok-definition">y</span>: <span class="tok-string">"pc1"</span>, <span class="tok-definition">filter</span>: <span class="tok-definition">d</span> =&gt; <span class="tok-variable">d</span>.<span class="tok-definition">pop</span> === <span class="tok-string">"Italy"</span>,  <span class="tok-definition">fill</span>: <span class="tok-string">"pop"</span>, <span class="tok-definition">opacity</span>: <span class="tok-literal">0.3</span>}),
+    <span class="tok-variable">Plot</span>.<span class="tok-definition">dot</span>([{<span class="tok-definition">x</span>: -<span class="tok-variable">centroids3</span>[<span class="tok-literal">1</span>][<span class="tok-literal">1</span>], <span class="tok-definition">y</span>: <span class="tok-variable">centroids3</span>[<span class="tok-literal">1</span>][<span class="tok-literal">0</span>]}], {<span class="tok-definition">x</span>: <span class="tok-string">"x"</span>, <span class="tok-definition">y</span>: <span class="tok-string">"y"</span>, <span class="tok-definition">fill</span>: <span class="tok-string">"red"</span>}),
+    <span class="tok-variable">Plot</span>.<span class="tok-definition">dot</span>(<span class="tok-variable">refDat</span>, {<span class="tok-definition">x</span>: <span class="tok-definition">d</span> =&gt; -<span class="tok-variable">d</span>.<span class="tok-definition">pc2</span>, <span class="tok-definition">y</span>: <span class="tok-string">"pc1"</span>, <span class="tok-definition">filter</span>: <span class="tok-definition">d</span> =&gt; <span class="tok-variable">d</span>.<span class="tok-definition">pop</span> === <span class="tok-string">"England"</span>, <span class="tok-definition">fill</span>: <span class="tok-string">"pop"</span>, <span class="tok-definition">opacity</span>: <span class="tok-literal">0.3</span>}),        
+    <span class="tok-variable">Plot</span>.<span class="tok-definition">dot</span>([{<span class="tok-definition">x</span>: -<span class="tok-variable">centroids3</span>[<span class="tok-literal">2</span>][<span class="tok-literal">1</span>], <span class="tok-definition">y</span>: <span class="tok-variable">centroids3</span>[<span class="tok-literal">2</span>][<span class="tok-literal">0</span>]}], {<span class="tok-definition">x</span>: <span class="tok-string">"x"</span>, <span class="tok-definition">y</span>: <span class="tok-string">"y"</span>, <span class="tok-definition">fill</span>: <span class="tok-string">"red"</span>}),
+    <span class="tok-variable">Plot</span>.<span class="tok-definition">dot</span>(<span class="tok-variable">individuals</span>, {<span class="tok-definition">x</span>: <span class="tok-definition">d</span> =&gt; -<span class="tok-variable">d</span>.<span class="tok-definition">pc2</span>, <span class="tok-definition">y</span>: <span class="tok-string">"pc1"</span>, <span class="tok-definition">tip</span>: <span class="tok-literal">true</span>, <span class="tok-definition">title</span>: <span class="tok-definition">d</span> =&gt; <span class="tok-variable">d</span>.<span class="tok-definition">individual</span>}),
+  ]
+})</code></pre><div id="cell-69" class="observablehq observablehq--cell"></div><pre data-language="ts"><code class="language-ts"><span class="tok-comment">/*</span>
+<span class="tok-comment">const target3 = projectionResults[0].pcCoordinates.slice(0,numPCsUsed3); </span>
+<span class="tok-comment">const Atb3 = computeAtb(centroids3, target3, numPCsUsed3);</span>
+<span class="tok-comment">display(Atb3)</span>
+<span class="tok-comment">const result = solveQP(AtA3, Atb3, constraints3.Amat, constraints3.bvec, 1); </span>
+<span class="tok-comment">display(result);</span>
+<span class="tok-comment">*/</span>
+
+<span class="tok-keyword">const</span> <span class="tok-definition">NNLSResults3</span> = <span class="tok-variable">projectionResults</span>
+  .<span class="tok-definition">filter</span>(<span class="tok-definition">o</span> =&gt; <span class="tok-variable">o</span>.<span class="tok-definition">nonMissingCount</span> &gt; <span class="tok-literal">20000</span>)
+  .<span class="tok-definition">map</span>((<span class="tok-definition">o</span>, <span class="tok-definition">idx</span>) =&gt; {
+    <span class="tok-keyword">const</span> <span class="tok-definition">target3</span> = <span class="tok-variable">o</span>.<span class="tok-definition">pcCoordinates</span>.<span class="tok-definition">slice</span>(<span class="tok-literal">0</span>, <span class="tok-variable">numPCsUsed3</span>);
+    <span class="tok-keyword">const</span> [<span class="tok-definition">alpha</span>, <span class="tok-definition">beta</span>, <span class="tok-definition">gamma</span>] = <span class="tok-variable">computeNNLS</span>(<span class="tok-variable">centroids3</span>, <span class="tok-variable">target3</span>, <span class="tok-variable">numPCsUsed3</span>, <span class="tok-variable">constraints3</span>, <span class="tok-variable">AtA3</span>);
+    <span class="tok-keyword">return</span> { <span class="tok-definition">individual</span>: <span class="tok-variable">idx</span>, <span class="tok-definition">Germany</span>: <span class="tok-variable">alpha</span>, <span class="tok-definition">Italy</span>: <span class="tok-variable">beta</span>, <span class="tok-definition">England</span>: <span class="tok-variable">gamma</span>};
+  });
+
+<span class="tok-variable">display</span>(<span class="tok-variable">Inputs</span>.<span class="tok-definition">table</span>(<span class="tok-variable">NNLSResults3</span>));
+
+<span class="tok-keyword">const</span> <span class="tok-definition">longFormatData3</span> = <span class="tok-variable">NNLSResults3</span>.<span class="tok-definition">flatMap</span>(<span class="tok-definition">d</span> =&gt; [
+  { <span class="tok-definition">individual</span>: <span class="tok-variable">d</span>.<span class="tok-definition">individual</span>, <span class="tok-definition">population</span>: <span class="tok-string">"Germany"</span>, <span class="tok-definition">proportion</span>: <span class="tok-variable">d</span>.<span class="tok-definition">Germany</span> },
+  { <span class="tok-definition">individual</span>: <span class="tok-variable">d</span>.<span class="tok-definition">individual</span>, <span class="tok-definition">population</span>: <span class="tok-string">"Italy"</span>, <span class="tok-definition">proportion</span>: <span class="tok-variable">d</span>.<span class="tok-definition">Italy</span> },
+  { <span class="tok-definition">individual</span>: <span class="tok-variable">d</span>.<span class="tok-definition">individual</span>, <span class="tok-definition">population</span>: <span class="tok-string">"England"</span>, <span class="tok-definition">proportion</span>: <span class="tok-variable">d</span>.<span class="tok-definition">England</span> },
+]);
+</code></pre><div id="cell-70" class="observablehq observablehq--cell"></div><pre data-language="js"><code class="language-js">
+<span class="tok-variable">Plot</span>.<span class="tok-definition">plot</span>({
+  <span class="tok-definition">color</span>: { <span class="tok-definition">legend</span>: <span class="tok-literal">true</span>, <span class="tok-definition">domain</span>: [<span class="tok-string">"Germany"</span>, <span class="tok-string">"Italy"</span>, <span class="tok-string">"England"</span>]},
+  <span class="tok-definition">marks</span>: [
+    <span class="tok-variable">Plot</span>.<span class="tok-definition">barY</span>(<span class="tok-variable">longFormatData3</span>, {
+      <span class="tok-definition">x</span>: <span class="tok-string">"individual"</span>,
+      <span class="tok-definition">y</span>: <span class="tok-string">"proportion"</span>,
+      <span class="tok-definition">fill</span>: <span class="tok-string">"population"</span>,
+    })
+  ]
+})
+</code></pre><div id="cell-6" class="observablehq observablehq--cell"><div><h1>Appendix</h1>
+</div></div><div id="cell-9" class="observablehq observablehq--cell"></div><pre data-language="ts"><code class="language-ts"><span class="tok-keyword">import</span> { <span class="tok-definition">readBimData</span>, <span class="tok-definition">readFamData</span>, <span class="tok-definition">readBedData</span>, <span class="tok-definition">readSnpWeights</span>, <span class="tok-definition">getOverlapMasks</span>, <span class="tok-definition">reducePcWeights</span>,
+       <span class="tok-definition">extractAndTransposeGenotypes</span>, <span class="tok-definition">projectSamples</span>, <span class="tok-definition">getPopulationMean</span>, <span class="tok-definition">computeAtA</span>, <span class="tok-definition">computeAtb</span>, <span class="tok-definition">buildConstraints</span>, <span class="tok-definition">computeNNLS</span> } <span class="tok-keyword">from</span> <span class="tok-string">'./pca_projection.browser.js'</span>;</code></pre></main>
+  
+
+<style type="text/css">:root {
+  --syntax-link: var(--theme-foreground-focus);
+  --syntax-keyword: #e36209;
+  --syntax-atom: #032f62;
+  --syntax-literal: #6f42c1;
+  --syntax-string: #22863a;
+  --syntax-comment: var(--theme-foreground-muted);
+  --syntax-invalid: var(--theme-error);
+  --syntax-definition: #005cc5;
+  --syntax-variable: var(--theme-foreground-alt);
+  --syntax-meta: #d73a49;
+}
+
+:root {
+  --theme-background-b: color-mix(in srgb, var(--theme-foreground) 4%, var(--theme-background-a));
+  --theme-background: var(--theme-background-a);
+  --theme-background-alt: var(--theme-background-b);
+  --theme-foreground-alt: color-mix(in srgb, var(--theme-foreground) 90%, var(--theme-background-a));
+  --theme-foreground-muted: color-mix(in srgb, var(--theme-foreground) 60%, var(--theme-background-a));
+  --theme-foreground-faint: color-mix(in srgb, var(--theme-foreground) 50%, var(--theme-background-a));
+  --theme-foreground-fainter: color-mix(in srgb, var(--theme-foreground) 30%, var(--theme-background-a));
+  --theme-foreground-faintest: color-mix(in srgb, var(--theme-foreground) 14%, var(--theme-background-a));
+  --theme-error: #e7040f;
+  color-scheme: light;
+}
+
+:root {
+  --theme-foreground: #473d3a;
+  --theme-foreground-focus: #5028c1;
+  --theme-background-a: #efeee9;
+}
+</style></body></html>
