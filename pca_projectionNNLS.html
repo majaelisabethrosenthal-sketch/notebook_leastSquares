@@ -2,15 +2,17 @@
 <notebook theme="cotton">
   <title>PCA Projection NNLS</title>
   <script id="1" type="text/markdown">
-    # Non-negative least-squares with sum-to-one constraint applied to PCA projection
+    # Non-negative least squares with sum-to-one constraint applied to PCA projection
   </script>
   <script id="2" type="text/markdown">
-    We here test out non-negative least-squares, applied to the individuals we projected onto the PCA space, to see a target individual's PC coordinates to be expressed as a non-negative, sum-to-one mixture of reference populations.
+    We here test out non-negative least squares, applied to the individuals we projected onto the PCA space, to see a target individual's PC coordinates to be expressed as a non-negative, sum-to-one mixture of reference populations.
     For example "70% Spain + 30% Germany", or "50% Italy + 30% Germany + 20% England". 
     
-    This mirrors an admixture-style decomposition: we look for proportions ${tex`\alpha, \beta, (\gamma) \ge 0`} with ${tex`\alpha + \beta (+ \gamma) = 1`} such that
+    This mirrors an admixture-style decomposition.
     
-    ${tex`\alpha \cdot \vec{\mu}_{\text{pop1}} + \beta \cdot \vec{\mu}_{\text{pop2}} (+ \gamma \cdot \vec{\mu}_{\text{pop3}}) \approx \vec{x}_{\text{target}}`}
+    We look for proportions ${tex`\alpha, \beta, (\gamma) \ge 0`} with ${tex`\alpha + \beta (+ \gamma) = 1`} such that
+  
+    ${tex`\alpha \cdot \vec{\mu}_{\text{pop1}} + \beta \cdot \vec{\mu}_{\text{pop2}} (+ \gamma \cdot \vec{\mu}_{\text{pop3}}) = \vec{x}_{\text{target}}`}
     
     ## Preparing PCA projection
     To see how this is done, click [here](./pca_projection.html)
@@ -19,7 +21,7 @@
     const weightDat = FileAttachment("data/Joscha_HiRes_WestEurasia_weights_with_freqs.txt")
       .text().then(t => readSnpWeights(t));
   </script>
-  <script id="8" type="text/x-typescript">
+  <script id="4" type="text/x-typescript">
     const gretzingerPlinkData = await (async () => {
       const bimDat = await FileAttachment("data/2024_Gretzinger_EarlyCelts.bim").text().then(t => readBimData(t));
       const famDat = await FileAttachment("data/2024_Gretzinger_EarlyCelts.fam").text().then(t => readFamData(t));
@@ -31,29 +33,28 @@
 
     const plinkDat = gretzingerPlinkData;
   </script>
-  <script id="26" type="text/x-typescript">
+  <script id="5" type="text/x-typescript">
     const overlap = getOverlapMasks(plinkDat.bimDat, weightDat);
   </script>
-  <script id="37" type="text/x-typescript">
+  <script id="6" type="text/x-typescript">
     const {pcWeights : reducedPcWeights, frequencies : reducedFrequencies} = reducePcWeights(weightDat, overlap)
   </script>
-  <script id="48" type="text/x-typescript">
+  <script id="7" type="text/x-typescript">
     const genoMatrix = extractAndTransposeGenotypes(plinkDat.bedDat, plinkDat.numSnps, plinkDat.numInds, overlap)
   </script>
-  <script id="54" type="text/markdown">
+  <script id="8" type="text/markdown">
     ## Testing the PCA projection
   </script>
-  <script id="99" type="text/x-typescript">
+  <script id="9" type="text/x-typescript">
     const params = await FileAttachment("data/Joscha_HiRes_WestEurasia_parameters.json").json()
   </script>
-  <script id="72" type="text/x-typescript">
+  <script id="10" type="text/x-typescript">
     const projectionResults = projectSamples(genoMatrix, reducedPcWeights, reducedFrequencies, plinkDat.numInds, weightDat.numPCs, params.nSNPs, params.yScale, params.eigenValues)
-    display(projectionResults[0].pcCoordinates.slice(0,2))
   </script>
-  <script id="54" type="text/markdown">
+  <script id="11" type="text/markdown">
     ### Projected data coordinates
   </script>
-  <script id="55" type="text/x-typescript">
+  <script id="12" type="text/x-typescript">
     const projResultTable = projectionResults.map(o => ({
       nonMissing: o.nonMissingCount, 
       pc1: o.pcCoordinates[0], 
@@ -67,15 +68,40 @@
       pc9: o.pcCoordinates[8],
       pc10: o.pcCoordinates[9],
     }))
-    display(projResultTable.map(d => d.pc1)); 
   </script>
-  <script id="73" type="text/x-typescript" pinned="">
+  <script id="13" type="text/x-typescript" pinned="">
     display(Inputs.table(projResultTable));
   </script>
-  <script id="56" type="text/markdown">
+  <script id="14" type="text/markdown">
+    Let us only look at individuals that have a non-missing count of over 20k.
+  </script>
+  <script id="15" type="text/x-typescript">
+    const validIndividuals = projectionResults.filter(o => o.nonMissingCount > 20000);
+  </script>
+  <script id="15" type="text/x-typescript">
+    const individuals = validIndividuals
+      .map((o, idx) => ({
+        individual: idx,
+        pc1: o.pcCoordinates[0], 
+        pc2: o.pcCoordinates[1],
+        pc3: o.pcCoordinates[2],
+        pc4: o.pcCoordinates[3], 
+        pc5: o.pcCoordinates[4],
+        pc6: o.pcCoordinates[5],
+        pc7: o.pcCoordinates[6], 
+        pc8: o.pcCoordinates[7],
+        pc9: o.pcCoordinates[8],
+        pc10: o.pcCoordinates[9],
+      }))
+  </script>
+  <script id="16" type="text/x-typescript" pinned="">
+    display(Inputs.table(individuals));
+  </script>
+
+  <script id="17" type="text/markdown">
     ### Reference data
   </script>
-  <script id="57" type="text/x-typescript">
+  <script id="18" type="text/x-typescript">
     const refDat = await FileAttachment("data/Joscha_HiRes_WestEurasia_evec_with_groups.tsv")
       .tsv({array: false, typed: true})
       .then(d => d.map(r => {
@@ -95,25 +121,23 @@
           pop: r.pop
         }
       }))
-    display(refDat);
   </script>
-  <script id="58" type="text/x-typescript" pinned="">
+  <script id="19" type="text/x-typescript" pinned="">
     Inputs.table(refDat)
   </script>
-  <script id="59" type="text/x-typescript" pinned="">
+  <script id="20" type="text/x-typescript" pinned="">
     Plot.plot({
       color: {legend: true},
       marks: [
         Plot.dot(refDat, {x: d => -d.pc2, y: "pc1", fill: "group", opacity: 0.3, tip: true, title: d => d.pop}),
-        //Plot.dot(refDat, {x: d => -d.pc2, y: "pc1", fill: "black", filter: d=>d.pop == "Finland_Subset", tip: true, title: d => d.pop}),
-        Plot.dot(projResultTable, {x: d => -d.pc2, y: "pc1", filter: d => d.nonMissing > 20000}),
+        Plot.dot(individuals, {x: d => -d.pc2, y: "pc1"}),
       ]
     })
   </script>
   <script id="60" type="text/markdown">
     ## Testing NNLS
 
-    Now we calculate and visualize the non-negative, sum-to-one mixture of reference populations. 
+    We now calculate and visualize the non-negative, sum-to-one mixture of reference populations. 
 
     ### Testing two reference groups
     As an initial test, we perform a decomposition using Germany and Spain as reference groups. 
@@ -122,57 +146,39 @@
   <script id="61" type="text/x-typescript" pinned="">
     import { solveQP } from "quadprog";
 
-    const numPCsUsed = 2;
-    const populationNames = ["Germany", "Spain"];
+    const numPCsUsed2 = 2;
+    const populationNames2 = ["Germany", "Spain"];
 
-    const centroids = populationNames.map(pop => getPopulationMean(refDat, pop, numPCsUsed));
-    display(centroids);
-    const AtA = computeAtA(centroids, numPCsUsed);
-    const constraints = buildConstraints(populationNames.length);
-
-    const individuals = projectionResults
-      .filter(o => o.nonMissingCount > 20000)
-      .map((o, idx) => ({
-        individual: idx,
-        pc1: o.pcCoordinates[0], 
-        pc2: o.pcCoordinates[1],
-        pc3: o.pcCoordinates[2],
-        pc4: o.pcCoordinates[3], 
-        pc5: o.pcCoordinates[4],
-        pc6: o.pcCoordinates[5],
-        pc7: o.pcCoordinates[6], 
-        pc8: o.pcCoordinates[7],
-        pc9: o.pcCoordinates[8],
-        pc10: o.pcCoordinates[9],
-      }))
+    const centroids2 = populationNames2.map(pop => getPopulationMean(refDat, pop, numPCsUsed2));
   </script>
   <script id="62" type="text/x-typescript" pinned="">
     Plot.plot({
       color: {legend: true, domain: ["Germany", "Spain"]},
       marks: [
         Plot.dot(refDat, {x: d => -d.pc2, y: "pc1", filter: d => d.pop === "Germany", fill: "pop", opacity: 0.3}),        
-        Plot.dot([{x: -centroids[0][1], y: centroids[0][0]}], {x: "x", y: "y", fill: "red"}),
+        Plot.dot([{x: -centroids2[0][1], y: centroids2[0][0]}], {x: "x", y: "y", fill: "red"}),
         Plot.dot(refDat, {x: d => -d.pc2, y: "pc1", filter: d => d.pop === "Spain",  fill: "pop", opacity: 0.3}),
-        Plot.dot([{x: -centroids[1][1], y: centroids[1][0]}], {x: "x", y: "y", fill: "red"}),
+        Plot.dot([{x: -centroids2[1][1], y: centroids2[1][0]}], {x: "x", y: "y", fill: "red"}),
         Plot.dot(individuals, {x: d => -d.pc2, y: "pc1", tip: true, title: d => d.individual}),
       ]
     })
   </script>
   <script id="63" type="text/markdown">
-    Now we can calculate ${tex`\alpha`} and ${tex`\beta`} and visualize them in a stacked barchart.
+    We can now calculate ${tex`\alpha`} and ${tex`\beta`} and visualize them in a stacked barchart.
   </script>
   <script id="64" type="text/x-typescript" pinned="">
-    const NNLSResults = projectionResults
-      .filter(o => o.nonMissingCount > 20000)
+    const AtA2 = computeAtA(centroids2, numPCsUsed2);
+    const constraints2 = buildConstraints(populationNames2.length);
+    const NNLSResults2 = validIndividuals
       .map((o, idx) => {
-        const target = o.pcCoordinates.slice(0, numPCsUsed);
-        const [alpha, beta] = computeNNLS(centroids, target, numPCsUsed, constraints, AtA);
+        const target2 = o.pcCoordinates.slice(0, numPCsUsed2);
+        const [alpha, beta] = computeNNLS(centroids2, target2, numPCsUsed2, constraints2, AtA2);
         return { individual: idx, Germany: alpha, Spain: beta };
       });
 
-    display(Inputs.table(NNLSResults));
+    display(Inputs.table(NNLSResults2));
 
-    const longFormatData = NNLSResults.flatMap(d => [
+    const tidy2 = NNLSResults2.flatMap(d => [
       { individual: d.individual, population: "Germany", proportion: d.Germany },
       { individual: d.individual, population: "Spain", proportion: d.Spain },
     ]);
@@ -182,7 +188,7 @@
     Plot.plot({
       color: { legend: true },
       marks: [
-        Plot.barY(longFormatData, {
+        Plot.barY(tidy2, {
           x: "individual",
           y: "proportion",
           fill: "population",
@@ -200,11 +206,6 @@
     const populationNames3 = ["Germany", "Italy", "England"];
 
     const centroids3 = populationNames3.map(pop => getPopulationMean(refDat, pop, numPCsUsed3));
-    display(centroids3);
-    const AtA3 = computeAtA(centroids3, numPCsUsed3);
-    display(AtA3);
-    const constraints3 = buildConstraints(populationNames3.length);
-    display(constraints3)
   </script>
   <script id="68" type="text/x-typescript" pinned="">
     Plot.plot({
@@ -221,16 +222,9 @@
     })
   </script>
   <script id="69" type="text/x-typescript" pinned="">
-    /*
-    const target3 = projectionResults[0].pcCoordinates.slice(0,numPCsUsed3); 
-    const Atb3 = computeAtb(centroids3, target3, numPCsUsed3);
-    display(Atb3)
-    const result = solveQP(AtA3, Atb3, constraints3.Amat, constraints3.bvec, 1); 
-    display(result);
-    */
-
-    const NNLSResults3 = projectionResults
-      .filter(o => o.nonMissingCount > 20000)
+    const AtA3 = computeAtA(centroids3, numPCsUsed3);
+    const constraints3 = buildConstraints(populationNames3.length);
+    const NNLSResults3 = validIndividuals
       .map((o, idx) => {
         const target3 = o.pcCoordinates.slice(0, numPCsUsed3);
         const [alpha, beta, gamma] = computeNNLS(centroids3, target3, numPCsUsed3, constraints3, AtA3);
@@ -239,7 +233,7 @@
 
     display(Inputs.table(NNLSResults3));
 
-    const longFormatData3 = NNLSResults3.flatMap(d => [
+    const tidy3 = NNLSResults3.flatMap(d => [
       { individual: d.individual, population: "Germany", proportion: d.Germany },
       { individual: d.individual, population: "Italy", proportion: d.Italy },
       { individual: d.individual, population: "England", proportion: d.England },
@@ -251,7 +245,7 @@
     Plot.plot({
       color: { legend: true, domain: ["Germany", "Italy", "England"]},
       marks: [
-        Plot.barY(longFormatData3, {
+        Plot.barY(tidy3, {
           x: "individual",
           y: "proportion",
           fill: "population",
@@ -260,10 +254,141 @@
     })
     
   </script>
+  <script id="71" type="text/markdown">
+    ### Testing the impact of the number of PCs  
+    Let us now perform the same decomposition using Germany, Italy and England as reference groups, while increasing the number of PCs. 
 
-  <script id="6" type="text/markdown">
-    # Appendix
   </script>
+
+  <script id="72" type="module">
+    const targetIndividualIdx2 = view(Inputs.range([0, validIndividuals.length - 1], {
+      label: "Individual",
+      step: 1,
+      value: 0
+    }));
+  </script>
+
+  <script id="75" type="module">
+    const target = validIndividuals[targetIndividualIdx2];  
+    const pcRange = [3, 4, 5, 6, 7, 8, 9, 10];
+    const populationNames = ["Germany", "Italy", "England"];    
+    const comparisonResults = pcRange.map(numPCs => {
+      const centroids = populationNames.map(pop => getPopulationMean(refDat, pop, numPCs));
+      const AtA = computeAtA(centroids, numPCs);
+      const constraints = buildConstraints(populationNames.length);
+      const targetCoords = target.pcCoordinates.slice(0, numPCs);
+      const [alpha, beta, gamma] = computeNNLS(centroids, targetCoords, numPCs, constraints, AtA);
+      return { numPCs, Germany: alpha, Italy: beta, England: gamma };
+    });
+    display(comparisonResults);
+
+    const tidy = comparisonResults.flatMap(d => [
+      { numPCs: d.numPCs, population: "Germany", proportion: d.Germany },
+      { numPCs: d.numPCs, population: "Italy", proportion: d.Italy },
+      { numPCs: d.numPCs, population: "England", proportion: d.England },
+    ]);
+  </script>
+  <script id="76" type="module" pinned="">
+    Plot.plot({
+      color: { legend: true, domain: ["Germany", "Italy", "England"] },
+      x: { label: "Number of PCs used" },
+      y: { domain: [0, 1], label: "Estimation of components" },
+      marks: [
+        Plot.line(tidy, { x: "numPCs", y: "proportion", stroke: "population" }),
+        Plot.dot(tidy, { x: "numPCs", y: "proportion", fill: "population" })
+      ]
+    })
+  </script>
+  <script id="77" type="text/markdown">
+    We can see that the estimates are initially unstable with fewer PCs, but stabilize consistently starting at six or seven PCs.
+    
+    So let us compare the same decomposition shown in stacked bar charts using three, six and ten PCs. 
+  </script>
+
+  <script id="78" type="text/x-typescript">
+    const PCs = [3, 6, 10];
+    const results6_10 = PCs.map(numPCs => {
+      const centroids = populationNames.map(pop => getPopulationMean(refDat, pop, numPCs));
+      const AtA = computeAtA(centroids, numPCs);
+      const constraints = buildConstraints(populationNames.length);
+      
+      const NNLSResults = validIndividuals.map((o, idx) => {
+        const target = o.pcCoordinates.slice(0, numPCs);
+        const [alpha, beta, gamma] = computeNNLS(centroids, target, numPCs, constraints, AtA);
+        return { individual: idx, numPCs, Germany: alpha, Italy: beta, England: gamma };
+      });
+      
+      return NNLSResults;
+    });
+
+    const flatResults = results6_10.flat();
+
+    const tidy6_10 = flatResults.flatMap(d => [
+      { individual: d.individual, numPCs: d.numPCs, population: "Germany", proportion: d.Germany },
+      { individual: d.individual, numPCs: d.numPCs, population: "Italy", proportion: d.Italy },
+      { individual: d.individual, numPCs: d.numPCs, population: "England", proportion: d.England },
+    ]);
+
+  </script>
+  <script id="79" type="text/x-typescript" pinned="">
+    Plot.plot({
+      width: 1000,
+      color: { legend: true, domain: ["Germany", "Italy", "England"]},      
+      marks: [
+        Plot.barY(tidy6_10, {
+          x: "numPCs",
+          y: "proportion",
+          fill: "population",
+          fx: "individual",
+        }),
+      ]
+    })
+  </script>
+
+<script id="78" type="module">
+  /*
+  const plot3PCs = () => Plot.plot({
+    y: { domain: [0, 1] },
+    color: { legend: true, domain: ["Germany", "Italy", "England"]},
+    marks: [
+      Plot.barY(tidy3, {
+        x: "individual",
+        y: "proportion",
+        fill: "population",
+      })
+    ]
+  });
+
+  const plot10PCs = () => Plot.plot({
+    y: { domain: [0, 1] },
+    color: { legend: true, domain: ["Germany", "Italy", "England"]},
+    marks: [
+      Plot.barY(tidy10, {
+        x: "individual",
+        y: "proportion",
+        fill: "population",
+      })
+    ]
+  });
+
+  display(html`
+    <div style="display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; align-items: start;">
+      <div>
+        <h3>3 PCs</h3>
+        ${plot3PCs()}
+      </div>
+      <div>
+        <h3>10 PCs</h3>
+        ${plot10PCs()}
+      </div>
+    </div>
+  `);
+  */
+</script>
+
+<script id="6" type="text/markdown">
+  # Appendix
+</script>
   <script id="9" type="text/x-typescript" pinned="">
     import { readBimData, readFamData, readBedData, readSnpWeights, getOverlapMasks, reducePcWeights,
            extractAndTransposeGenotypes, projectSamples, getPopulationMean, computeAtA, computeAtb, buildConstraints, computeNNLS } from './pca_projection.browser.js';
