@@ -27,99 +27,165 @@
     Also note that ${tex`D=A^TA`} and ${tex`d=Aᵀb`}.
 
     Here we want to test the `quadprog npm` package. 
+
+    Let us first define two reference points A and B and connect them with a line. Now we create one point that is exactly on that line and one that is slightly off. 
+    NNLS should find ${tex`\alpha`} and ${tex`\beta`} for the two points so that the residual (the error distance) is minimized without allowing any negative mixing weights and with ${tex`\alpha + \beta = 1`}.
   </script>
-  <script id="10" type="module" pinned="">
-    import normal from 'https://cdn.jsdelivr.net/gh/stdlib-js/random-base-normal@esm/index.mjs';
-    import uniform from 'https://cdn.jsdelivr.net/gh/stdlib-js/random-base-uniform@esm/index.mjs';
+  <script id="3" type="module" pinned="">
+    const A = [
+      [2, 4],
+      [3, 6]
+    ];
+
+    const A3 = [
+      [2, 4],
+      [3, 6],
+      [4, 5]
+    ]
+
+    const b = [0.7 * A[0][0] + 0.3 * A[1][0], 0.7 * A[0][1] + 0.3 * A[1][1]];
+    const b_out = [0.5 * A3[0][0] + 0.2 * A3[1][0] + 0.3 * A3[2][0], 0.5 * A3[0][1] + 0.2 * A3[1][1] + 0.3 * A3[2][1]];
+  </script>
+  <script id="3" type="module" pinned="">
+    Plot.plot({
+        x: { domain: [0, 7] },
+        y: { domain: [0, 7] },
+        marks: [
+            Plot.dot([{x: A[0][0], y: A[0][1]}], {x: "x", y: "y", fill: "green"}),
+            Plot.dot([{x: A[1][0], y: A[1][1]}], {x: "x", y: "y", fill: "blue"}),
+            Plot.text([{x: A[0][0], y: A[0][1], label: "A"}, {x: A[1][0], y: A[1][1], label: "B"}], {x: "x", y: "y", text: "label", dy: -12, fontWeight: "bold", fontSize: 12}),
+            Plot.link([{x1: A[0][0], y1: A[0][1], x2: A[1][0], y2: A[1][1]}], {x1: "x1", y1: "y1", x2: "x2", y2: "y2", stroke: "black"}),
+            Plot.dot([{x: b[0], y: b[1]}], {x: "x", y: "y"}),
+            Plot.dot([{x: b_out[0], y: b_out[1]}], {x: "x", y: "y"}),            
+    ]
+    })
+  </script>
+  <script id="4" type="module" pinned="">
     import { solveQP } from "quadprog";
+    import { computeAtA, computeAtb, buildConstraints, copyMat } from "./pca_projection.browser.js";
+    
+    const AtA = computeAtA(A, 2);
+    const Atb = computeAtb(A, b, 2);
+    const constraints = buildConstraints(2);
+    const result = solveQP(copyMat(AtA), Atb, constraints.Amat, constraints.bvec, constraints.meq);
+    display(result.solution);
 
-    const M = 20;
-    const N = 2;
-    const A = new Float64Array(M * N);
-    for (let i = 0; i < M; i++) {
-      A[i * N + 0] = uniform(0,5);
-      A[i * N + 1] = uniform(0,5);
-    }
-
-    const b = new Float64Array(M);
-    for (let i = 0; i < M; i++) {
-        b[i] = A[i * N + 0] * 0.7 + A[i * N + 1] * 0.3 + normal(0, 1);
-    }
-
-    const b_negative = new Float64Array(M);
-    for (let i = 0; i < M; i++) {
-      b_negative[i] = A[i * N + 0] * (-0.7) + A[i * N + 1] * (-0.3) + normal(0, 1);
-    }
-
-    const AtA = [];
-    for (let i = 1; i <= N; i++) {
-      AtA[i] = [];
-      for (let j = 1; j <= N; j++) {
-        let sum = 0;
-        for (let k = 0; k < M; k++) sum += A[k*N+(i-1)] * A[k*N+(j-1)];
-        AtA[i][j] = sum;
-      }
-    }
-
-    const AtA_copy = [];
-    for (let i = 1; i <= N; i++) {
-      AtA_copy[i] = [];
-      for (let j = 1; j <= N; j++) {
-        let sum = 0;
-        for (let k = 0; k < M; k++) sum += A[k*N+(i-1)] * A[k*N+(j-1)];
-        AtA_copy[i][j] = sum;
-      }
-    }    
-
-    const Atb = [];
-    for (let i = 1; i <= N; i++) {
-      let sum = 0;
-      for (let k = 0; k < M; k++) {
-        sum += A[k*N+(i-1)] * b[k];
-      }
-      Atb[i] = sum;
-    }
-
-
-    const Atb_neg = [];
-    for (let i = 1; i <= N; i++) {
-      let sum = 0;
-      for (let k = 0; k < M; k++) {
-        sum += A[k*N+(i-1)] * b_negative[k];
-      }
-      Atb_neg[i] = sum;
-    }
-
-    /*
-    const Amat = [];
-    Amat[1] = [];
-    Amat[1][1] = 1; Amat[1][2] = 1; Amat[1][3] = 0;  
-
-    Amat[2] = [];
-    Amat[2][1] = 1; Amat[2][2] = 0; Amat[2][3] = 1;  
-    */
-   const Amat = [
-    undefined,
-    [undefined,1,1,0],
-    [undefined,1,0,1]
-   ];
-
-    display(Amat); 
-
-    const bvec = [undefined, 1, 0, 0];
-    /*
-    const bvec = [];
-    bvec[1] = 1; bvec[2] = 0; bvec[3] = 0;
-    */
-
-    const meq = 1;
-
-    const result = solveQP(AtA, Atb, Amat, bvec, meq);
-    const result_negative = solveQP(AtA_copy, Atb_neg, Amat, bvec, meq);
-    display(result);
-    display(result_negative);
+    const Atb_out = computeAtb(A, b_out, 2);
+    const result_out = solveQP(copyMat(AtA), Atb_out, constraints.Amat, constraints.bvec, constraints.meq);
+    display(result_out.solution);
 
   </script>
+  <script id="5" type="text/markdown">
+    ## Residuals (Goodness of fit)
+    The residual shows how well a point can be described by the line shown above.
+    They represent the difference between the observed coordinates and the values predicted by the NNLS model.
+
+    ${tex`Residual = \sqrt{(x_{target} - x_{model})^2 + (y_{target} - y_{model})^2}`}
+
+    A small residual means the point lies close to the line, while a large residual means it floats far away.
+
+    Let us first plot the points modeled by NNLS in red.
+  </script>
+  <script id="6" type="module" pinned="">
+    const bModel = [result.solution[1] * A[0][0] + result.solution[2] * A[1][0], result.solution[1] * A[0][1] + result.solution[2] * A[1][1]];
+    const b_outModel = [result_out.solution[1] * A[0][0] + result_out.solution[2] * A[1][0],  result_out.solution[1] * A[0][1] + result_out.solution[2] * A[1][1]];
+  </script>
+
+  <script id="7" type="module" pinned="">
+    Plot.plot({
+        x: { domain: [0, 7] },
+        y: { domain: [0, 7] },
+        marks: [
+            Plot.dot([{x: A[0][0], y: A[0][1]}], {x: "x", y: "y", fill: "green"}),
+            Plot.dot([{x: A[1][0], y: A[1][1]}], {x: "x", y: "y", fill: "blue"}),
+            Plot.text([{x: A[0][0], y: A[0][1], label: "A"}, {x: A[1][0], y: A[1][1], label: "B"}], {x: "x", y: "y", text: "label", dy: -12, fontWeight: "bold", fontSize: 12}),
+            Plot.link([{x1: A[0][0], y1: A[0][1], x2: A[1][0], y2: A[1][1]}], {x1: "x1", y1: "y1", x2: "x2", y2: "y2", stroke: "black"}),
+            Plot.dot([{x: bModel[0], y: bModel[1]}], {x: "x", y: "y", fill: "red"}),
+            Plot.dot([{x: b_outModel[0], y: b_outModel[1]}], {x: "x", y: "y", fill: "red"}), 
+            Plot.dot([{x: b[0], y: b[1]}], {x: "x", y: "y"}),
+            Plot.dot([{x: b_out[0], y: b_out[1]}], {x: "x", y: "y"}),        
+    
+          ]
+    })
+  </script>
+  <script id="8" type="module" pinned="">
+    const residual_b = Math.sqrt((b[0] - bModel[0]) * (b[0] - bModel[0]) + (b[1] - bModel[1]) * (b[1] - bModel[1]));
+    const residual_b_out = Math.sqrt((b_out[0] - b_outModel[0]) * (b_out[0] - b_outModel[0]) + (b_out[1] - b_outModel[1]) * (b_out[1] - b_outModel[1]));
+  </script>
+  <script id="9" type="text/markdown">
+    Now you can see that our first point already lies on the line so the residual is very small (${residual_b}) the other point does not lie on the line so the residual is larger (${residual_b_out}).
+
+    Let us now investigate how this will change if we add another reference point C.
+  </script>
+
+  <script id="10" type="module" pinned="">
+    Plot.plot({
+        x: { domain: [0, 7] },
+        y: { domain: [0, 7] },
+        marks: [
+            Plot.dot([{x: A3[0][0], y: A3[0][1]}], {x: "x", y: "y", fill: "green"}),
+            Plot.dot([{x: A3[1][0], y: A3[1][1]}], {x: "x", y: "y", fill: "blue"}),
+            Plot.dot([{x: A3[2][0], y: A3[2][1]}], {x: "x", y: "y", fill: "purple"}),
+            Plot.text([{x: A3[0][0], y: A3[0][1], label: "A"}, {x: A3[1][0], y: A3[1][1], label: "B"}, {x: A3[2][0], y: A3[2][1], label: "C"}], {x: "x", y: "y", text: "label", dy: -12, fontWeight: "bold", fontSize: 12}),
+            Plot.link([{x1: A3[0][0], y1: A3[0][1], x2: A3[1][0], y2: A3[1][1]}], {x1: "x1", y1: "y1", x2: "x2", y2: "y2", stroke: "black"}),
+            Plot.link([{x1: A3[0][0], y1: A3[0][1], x2: A3[2][0], y2: A3[2][1]}], {x1: "x1", y1: "y1", x2: "x2", y2: "y2", stroke: "black"}),
+            Plot.link([{x1: A3[1][0], y1: A3[1][1], x2: A3[2][0], y2: A3[2][1]}], {x1: "x1", y1: "y1", x2: "x2", y2: "y2", stroke: "black"}),
+            Plot.dot([{x: b[0], y: b[1]}], {x: "x", y: "y"}),
+            Plot.dot([{x: b_out[0], y: b_out[1]}], {x: "x", y: "y"}),            
+    ]
+    })
+  </script>
+  <script id="11" type="text/markdown">
+    Now we can see that our second point is inside the triangle ABC. 
+
+    Let us now test NNLS.
+  </script>
+  <script id="12" type="module" pinned="">
+    const AtA3 = computeAtA(A3, 2);
+    const Atb3 = computeAtb(A3, b, 2);
+    const constraints3 = buildConstraints(3);
+    const result3 = solveQP(copyMat(AtA3), Atb3, constraints3.Amat, constraints3.bvec, constraints3.meq);
+    display(result3.solution);
+
+    const Atb_out3 = computeAtb(A3, b_out, 2);
+    const result_out3 = solveQP(copyMat(AtA3), Atb_out3, constraints3.Amat, constraints3.bvec, constraints3.meq);
+    display(result_out3.solution);
+
+  </script>
+  <script id="13" type="text/markdown">
+    Let us now plot the points modeled by NNLS in red.
+  </script>
+  <script id="14" type="module" pinned="">
+    const bModel3 = [result3.solution[1] * A3[0][0] + result3.solution[2] * A3[1][0] + result3.solution[3] * A3[2][0] , result3.solution[1] * A3[0][1] + result3.solution[2] * A3[1][1] + result3.solution[3] * A3[2][1]];
+    const b_outModel3 = [result_out3.solution[1] * A3[0][0] + result_out3.solution[2] * A3[1][0] + result_out3.solution[3] * A3[2][0],  result_out3.solution[1] * A3[0][1] + result_out3.solution[2] * A3[1][1] + result_out3.solution[3] * A3[2][1]];
+  </script>
+  <script id="15" type="module" pinned="">
+    Plot.plot({
+        x: { domain: [0, 7] },
+        y: { domain: [0, 7] },
+        marks: [
+            Plot.dot([{x: A3[0][0], y: A3[0][1]}], {x: "x", y: "y", fill: "green"}),
+            Plot.dot([{x: A3[1][0], y: A3[1][1]}], {x: "x", y: "y", fill: "blue"}),
+            Plot.dot([{x: A3[2][0], y: A3[2][1]}], {x: "x", y: "y", fill: "purple"}),
+            Plot.text([{x: A3[0][0], y: A3[0][1], label: "A"}, {x: A3[1][0], y: A3[1][1], label: "B"}, {x: A3[2][0], y: A3[2][1], label: "C"}], {x: "x", y: "y", text: "label", dy: -12, fontWeight: "bold", fontSize: 12}),
+            Plot.link([{x1: A3[0][0], y1: A3[0][1], x2: A3[1][0], y2: A3[1][1]}], {x1: "x1", y1: "y1", x2: "x2", y2: "y2", stroke: "black"}),
+            Plot.link([{x1: A3[0][0], y1: A3[0][1], x2: A3[2][0], y2: A3[2][1]}], {x1: "x1", y1: "y1", x2: "x2", y2: "y2", stroke: "black"}),
+            Plot.link([{x1: A3[1][0], y1: A3[1][1], x2: A3[2][0], y2: A3[2][1]}], {x1: "x1", y1: "y1", x2: "x2", y2: "y2", stroke: "black"}),
+            Plot.dot([{x: bModel3[0], y: bModel3[1]}], {x: "x", y: "y", fill: "red"}),
+            Plot.dot([{x: b_outModel3[0], y: b_outModel3[1]}], {x: "x", y: "y", fill: "red"}),
+            Plot.dot([{x: b[0], y: b[1]}], {x: "x", y: "y"}),
+            Plot.dot([{x: b_out[0], y: b_out[1]}], {x: "x", y: "y"}),            
+    ]
+    })
+  </script>
+  <script id="16" type="module" pinned="">
+    const residual_b3 = Math.sqrt((b[0] - bModel3[0]) * (b[0] - bModel3[0]) + (b[1] - bModel3[1]) * (b[1] - bModel3[1]));
+    const residual_b_out3 = Math.sqrt((b_out[0] - b_outModel3[0]) * (b_out[0] - b_outModel3[0]) + (b_out[1] - b_outModel3[1]) * (b_out[1] - b_outModel3[1]));
+  </script>
+  <script id="17" type="text/markdown">
+    Now the residual of the first point again is very small (${residual_b3}) and the residual of our second point now also is very small since it is inside the triangle (${residual_b_out3}).
+  </script>
+
 
 
 
