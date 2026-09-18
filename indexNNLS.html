@@ -56,7 +56,8 @@
             Plot.text([{x: A[0][0], y: A[0][1], label: "A"}, {x: A[1][0], y: A[1][1], label: "B"}], {x: "x", y: "y", text: "label", dy: -12, fontWeight: "bold", fontSize: 12}),
             Plot.link([{x1: A[0][0], y1: A[0][1], x2: A[1][0], y2: A[1][1]}], {x1: "x1", y1: "y1", x2: "x2", y2: "y2", stroke: "black"}),
             Plot.dot([{x: b[0], y: b[1]}], {x: "x", y: "y"}),
-            Plot.dot([{x: b_out[0], y: b_out[1]}], {x: "x", y: "y"}),            
+            Plot.dot([{x: b_out[0], y: b_out[1]}], {x: "x", y: "y"}),
+            Plot.text([{x: b[0], y: b[1], label: "1"}, {x: b_out[0], y: b_out[1], label: "2"}], {x: "x", y: "y", text: "label", dy: -12, fontWeight: "bold", fontSize: 12}),          
     ]
     })
   </script>
@@ -77,10 +78,16 @@
   </script>
   <script id="5" type="text/markdown">
     ## Residuals (Goodness of fit)
-    The residual shows how well a point can be described by the line shown above.
-    They represent the difference between the observed coordinates and the values predicted by the NNLS model.
+    The residuals quantify how much the model's fit differs from the target's true coordinate values, serving as a direct indicator of the Goodness of Fit.
+    Depending on the model complexity (number of coordinates used), we can evaluate residuals in two ways:
 
-    ${tex`Residual = \sqrt{(x_{target} - x_{model})^2 + (y_{target} - y_{model})^2}`}
+    Residuals per coordinate axis k:
+    
+    ${tex`Residuals_k = (x_{target,k} - x_{model,k})`}
+
+    Residual Sum of Squares: 
+    
+    ${tex`RSS = \sum_{k=1}^{n}{(x_{target, k} - x_{model,k})^2 }`}
 
     A small residual means the point lies close to the line, while a large residual means it floats far away.
 
@@ -103,18 +110,29 @@
             Plot.dot([{x: bModel[0], y: bModel[1]}], {x: "x", y: "y", fill: "red"}),
             Plot.dot([{x: b_outModel[0], y: b_outModel[1]}], {x: "x", y: "y", fill: "red"}), 
             Plot.dot([{x: b[0], y: b[1]}], {x: "x", y: "y"}),
-            Plot.dot([{x: b_out[0], y: b_out[1]}], {x: "x", y: "y"}),        
-    
+            Plot.dot([{x: b_out[0], y: b_out[1]}], {x: "x", y: "y"}),
+            Plot.text([{x: b[0], y: b[1], label: "1"}, {x: b_out[0], y: b_out[1], label: "2"}], {x: "x", y: "y", text: "label", dy: -12, fontWeight: "bold", fontSize: 12}),   
+            Plot.link([{x1: b_out[0], y1: b_out[1], x2: b_outModel[0], y2: b_out[1]}], {x1: "x1", y1: "y1", x2: "x2", y2: "y2", stroke: "orange", strokeDasharray: "3,3"}),
+            Plot.link([{x1: b_outModel[0], y1: b_out[1], x2: b_outModel[0], y2: b_outModel[1]}], {x1: "x1", y1: "y1", x2: "x2", y2: "y2", stroke: "orange", strokeDasharray: "3,3"}),
+            Plot.link([{x1: b_out[0], y1: b_out[1], x2: b_outModel[0], y2: b_outModel[1]}], {x1: "x1", y1: "y1", x2: "x2", y2: "y2", stroke: "red",  strokeDasharray: "3,3"}),          
           ]
     })
   </script>
   <script id="8" type="module" pinned="">
-    const residual_b = Math.sqrt((b[0] - bModel[0]) * (b[0] - bModel[0]) + (b[1] - bModel[1]) * (b[1] - bModel[1]));
-    const residual_b_out = Math.sqrt((b_out[0] - b_outModel[0]) * (b_out[0] - b_outModel[0]) + (b_out[1] - b_outModel[1]) * (b_out[1] - b_outModel[1]));
-  </script>
-  <script id="9" type="text/markdown">
-    Now you can see that our first point already lies on the line so the residual is very small (${residual_b}) the other point does not lie on the line so the residual is larger (${residual_b_out}).
+    const residuals_b = [b[0] - bModel[0], b[1] - bModel[1]];
+    const rss_b = residuals_b.reduce((sum, r) => sum + r*r, 0);
 
+    const residuals_b_out = [b_out[0] - b_outModel[0], b_out[1] - b_outModel[1]];
+    const rss_b_out = residuals_b_out.reduce((sum, r) => sum + r*r, 0);
+  </script>
+
+  <script id="9" type="text/markdown">
+    For the point that lies exactly on the line, the residuals are (almost zero) (${residuals_b[0].toFixed(4)}, ${residuals_b[1].toFixed(4)}), giving an RSS of ${rss_b.toFixed(4)}.
+
+    For the point that lies off the line, the residuals are (${residuals_b_out[0].toFixed(4)}, ${residuals_b_out[1].toFixed(4)}), giving a clearly larger RSS of ${rss_b_out.toFixed(4)}.
+
+    This RSS value is exactly what NNLS minimizes. The smaller it is, the better the mixture of reference points explains the target.
+  
     Let us now investigate how this will change if we add another reference point C.
   </script>
 
@@ -131,7 +149,8 @@
             Plot.link([{x1: A3[0][0], y1: A3[0][1], x2: A3[2][0], y2: A3[2][1]}], {x1: "x1", y1: "y1", x2: "x2", y2: "y2", stroke: "black"}),
             Plot.link([{x1: A3[1][0], y1: A3[1][1], x2: A3[2][0], y2: A3[2][1]}], {x1: "x1", y1: "y1", x2: "x2", y2: "y2", stroke: "black"}),
             Plot.dot([{x: b[0], y: b[1]}], {x: "x", y: "y"}),
-            Plot.dot([{x: b_out[0], y: b_out[1]}], {x: "x", y: "y"}),            
+            Plot.dot([{x: b_out[0], y: b_out[1]}], {x: "x", y: "y"}), 
+            Plot.text([{x: b[0], y: b[1], label: "1"}, {x: b_out[0], y: b_out[1], label: "2"}], {x: "x", y: "y", text: "label", dy: -12, fontWeight: "bold", fontSize: 12}),                    
     ]
     })
   </script>
@@ -174,16 +193,22 @@
             Plot.dot([{x: bModel3[0], y: bModel3[1]}], {x: "x", y: "y", fill: "red"}),
             Plot.dot([{x: b_outModel3[0], y: b_outModel3[1]}], {x: "x", y: "y", fill: "red"}),
             Plot.dot([{x: b[0], y: b[1]}], {x: "x", y: "y"}),
-            Plot.dot([{x: b_out[0], y: b_out[1]}], {x: "x", y: "y"}),            
+            Plot.dot([{x: b_out[0], y: b_out[1]}], {x: "x", y: "y"}),   
+            Plot.text([{x: b[0], y: b[1], label: "1"}, {x: b_out[0], y: b_out[1], label: "2"}], {x: "x", y: "y", text: "label", dy: -12, fontWeight: "bold", fontSize: 12}),                   
     ]
     })
   </script>
   <script id="16" type="module" pinned="">
-    const residual_b3 = Math.sqrt((b[0] - bModel3[0]) * (b[0] - bModel3[0]) + (b[1] - bModel3[1]) * (b[1] - bModel3[1]));
-    const residual_b_out3 = Math.sqrt((b_out[0] - b_outModel3[0]) * (b_out[0] - b_outModel3[0]) + (b_out[1] - b_outModel3[1]) * (b_out[1] - b_outModel3[1]));
+    const residuals_b3 = [b[0] - bModel3[0], b[1] - bModel3[1]];
+    const rss_b3 = residuals_b3.reduce((sum, r) => sum + r*r, 0);
+
+    const residuals_b_out3 = [b_out[0] - b_outModel3[0], b_out[1] - b_outModel3[1]];
+    const rss_b_out3 = residuals_b_out3.reduce((sum, r) => sum + r*r, 0);
   </script>
   <script id="17" type="text/markdown">
-    Now the residual of the first point again is very small (${residual_b3}) and the residual of our second point now also is very small since it is inside the triangle (${residual_b_out3}).
+    Now the RSS of the first point again is (close to) zero (${rss_b3.toFixed(4)}), so nothing has changed.
+
+    With reference point C added, the second target point has an RSS of ${rss_b_out3.toFixed(4)}, now also being (close to) zero, because the point now lies inside the triangle spanned by A, B and C, and can be expressed as a proper non-negative mixture of all three.
   </script>
 
 

@@ -172,8 +172,9 @@
     const NNLSResults2 = validIndividuals
       .map((o, idx) => {
         const target2 = o.pcCoordinates.slice(0, numPCsUsed2);
-        const [alpha, beta] = computeNNLS(centroids2, target2, numPCsUsed2, constraints2, AtA2);
-        return { individual: idx, Germany: alpha, Spain: beta };
+        const result2 = computeNNLS(centroids2, target2, numPCsUsed2, constraints2, AtA2);
+        const [alpha, beta] = result2.coefficients;
+        return { individual: idx, Germany: alpha, Spain: beta, res_PC1: result2.residuals[0], res_PC2: result2.residuals[1], rss: result2.rss.toExponential(4)};
       });
 
     display(Inputs.table(NNLSResults2));
@@ -227,8 +228,9 @@
     const NNLSResults3 = validIndividuals
       .map((o, idx) => {
         const target3 = o.pcCoordinates.slice(0, numPCsUsed3);
-        const [alpha, beta, gamma] = computeNNLS(centroids3, target3, numPCsUsed3, constraints3, AtA3);
-        return { individual: idx, Germany: alpha, Italy: beta, England: gamma};
+        const nnlsOutput3 = computeNNLS(centroids3, target3, numPCsUsed3, constraints3, AtA3);
+        const [alpha, beta, gamma] = nnlsOutput3.coefficients;
+        return { individual: idx, Germany: alpha, Italy: beta, England: gamma, res_PC1: nnlsOutput3.residuals[0], res_PC2: nnlsOutput3.residuals[1], res_PC3: nnlsOutput3.residuals[2], rss: nnlsOutput3.rss.toExponential(4)};
       });
 
     display(Inputs.table(NNLSResults3));
@@ -277,8 +279,9 @@
       const AtA = computeAtA(centroids, numPCs);
       const constraints = buildConstraints(populationNames.length);
       const targetCoords = target.pcCoordinates.slice(0, numPCs);
-      const [alpha, beta, gamma] = computeNNLS(centroids, targetCoords, numPCs, constraints, AtA);
-      return { numPCs, Germany: alpha, Italy: beta, England: gamma };
+      const nnlsOutput = computeNNLS(centroids, targetCoords, numPCs, constraints, AtA);
+      const [alpha, beta, gamma] = nnlsOutput.coefficients;
+      return { numPCs, Germany: alpha, Italy: beta, England: gamma, MSE: nnlsOutput.rss / numPCs, residuals: nnlsOutput.residuals};
     });
     display(comparisonResults);
 
@@ -287,9 +290,14 @@
       { numPCs: d.numPCs, population: "Italy", proportion: d.Italy },
       { numPCs: d.numPCs, population: "England", proportion: d.England },
     ]);
+    const rssTidy = comparisonResults.flatMap(d => [
+      { numPCs: d.numPCs, MSE: d.MSE },
+    ]);
+
   </script>
   <script id="76" type="module" pinned="">
-    Plot.plot({
+
+    const plotEstimates = Plot.plot({
       color: { legend: true, domain: ["Germany", "Italy", "England"] },
       x: { label: "Number of PCs used" },
       y: { domain: [0, 1], label: "Estimation of components" },
@@ -297,12 +305,31 @@
         Plot.line(tidy, { x: "numPCs", y: "proportion", stroke: "population" }),
         Plot.dot(tidy, { x: "numPCs", y: "proportion", fill: "population" })
       ]
-    })
+    });
+
+    const plotMSE = Plot.plot({
+      marginLeft: 55,
+      x: { label: "Number of PCs used" },
+      y: { label: "MSE", zero: true, tickFormat: ".2e" },
+      marks: [
+        Plot.line(rssTidy, { x: "numPCs", y: "MSE"}),
+        Plot.dot(rssTidy, { x: "numPCs", y: "MSE" })
+      ]
+    });
+    display(html`
+      <div style="display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; align-items: start;">
+        <div style="min-width: 0;"><h3>Estimates</h3>${plotEstimates}</div>
+        <div style="min-width: 0;"><h3>Mean Squared Error</h3>${plotMSE}</div>
+      </div>
+    `);
   </script>
   <script id="77" type="text/markdown">
-    We can see that the estimates are initially unstable with fewer PCs, but stabilize consistently starting at six or seven PCs.
+    In the left graph we can see that the estimates are initially unstable with fewer PCs, but stabilize consistently starting at six or seven PCs.
     
-    So let us compare the same decomposition shown in stacked bar charts using three, six and ten PCs. 
+    The right graph shows the Mean Squared Error values. It should only show whether the fit improves/worsens/stays stable rather than being an absolute measure of fit quality across
+    different `numPCs` choices.
+
+    Let us compare the same decomposition shown in stacked bar charts using three, six and ten PCs. 
   </script>
 
   <script id="78" type="text/x-typescript">
@@ -314,7 +341,8 @@
       
       const NNLSResults = validIndividuals.map((o, idx) => {
         const target = o.pcCoordinates.slice(0, numPCs);
-        const [alpha, beta, gamma] = computeNNLS(centroids, target, numPCs, constraints, AtA);
+        const nnlsOutput = computeNNLS(centroids, target, numPCs, constraints, AtA);
+        const [alpha, beta, gamma ] = nnlsOutput.coefficients;
         return { individual: idx, numPCs, Germany: alpha, Italy: beta, England: gamma };
       });
       

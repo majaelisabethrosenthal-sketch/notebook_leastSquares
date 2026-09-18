@@ -77,6 +77,12 @@ interface Constraints {
     meq: number;
 }
 
+interface NNLSResult {
+    coefficients: number[],
+    residuals: number[], 
+    rss: number 
+}
+
 function readBimData(bimText: string): BimData {
     const lines = bimText.trim().split('\n');
     const nrSNPs = lines.length;
@@ -554,16 +560,29 @@ function copyMat(mat: number[][]): number[][] {
 }
 
 function computeNNLS(
-  centroids: number[][],
-  targetPcCoords: number[],
-  numPCs: number,
-  constraints: Constraints,
-  AtA: number[][]
-): number[] {
-  const Atb = computeAtb(centroids, targetPcCoords, numPCs);
-  const result = solveQP(copyMat(AtA), Atb, copyMat(constraints.Amat), [...constraints.bvec], constraints.meq); 
-  return result.solution.slice(1);
-}
+        centroids: number[][],
+        targetPcCoords: number[],
+        numPCs: number,
+        constraints: Constraints,
+        AtA: number[][]
+    ): NNLSResult {
+        const Atb = computeAtb(centroids, targetPcCoords, numPCs);
+        const result = solveQP(copyMat(AtA), Atb, copyMat(constraints.Amat), [...constraints.bvec], constraints.meq); 
+        const coefficients = result.solution.slice(1);
+        const residuals: number[] = [];
+        for (let i = 0; i < numPCs; i++) {
+            let model = 0;
+            for (let j = 0; j < centroids.length; j++) {
+                model += coefficients[j] * centroids[j][i];
+            }
+            residuals.push(targetPcCoords[i] - model);
+        }
+        const rss = residuals.reduce((sum, r) => sum + r * r, 0);
+
+        return { coefficients, residuals, rss };
+    }
+  
+
         
 export { readBimData, readFamData, readBedData, readSnpWeights, getOverlapMasks, reducePcWeights,
        extractAndTransposeGenotypes, projectSamples, dgels, dtrtri, extractMatrix, transposeMatrix, MatrixMultiplication, extractStandardErrors, generateEllipse, computeEllipseValues, generateEllipseAxes, getPopulationMean, computeAtA, computeAtb, buildConstraints, copyMat, computeNNLS};
